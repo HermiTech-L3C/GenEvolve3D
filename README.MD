@@ -16,7 +16,7 @@ Tkinter (usually comes pre-installed with Python)
 
 Clone this repository or download the script.
 Install the required packages:
-bash```
+    ```
     pip install numpy scikit-learn mayavi PyQt5
     ```
 ### Running the Program
