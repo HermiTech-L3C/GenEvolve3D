@@ -41,7 +41,7 @@ Stop the simulation at any time.
 Contributions to enhance or expand the functionality of this simulation are welcome. Please adhere to standard coding practices.
 ## Authors
 
-['ANT 0, GREENE']
+ANT 0, GREENE
 ## License
 This project is licensed under the MLP2.0 License - see the LICENSE.md file for details.
 ## Acknowledgments
