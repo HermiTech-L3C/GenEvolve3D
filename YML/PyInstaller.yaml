@@ -1,0 +1,37 @@
+# PyInstaller Configuration File
+block_cipher: null
+a:
+  pathex:
+'/path/to/your/script'  # Replace with the actual path to your script directory
+  binaries:
+['/path/to/additional/binary/if/any', '.']  # Include additional binaries if needed
+  datas: []
+  hiddenimports:
+'numpy'
+'sklearn'
+'tkinter'
+'threading'
+'mayavi'
+'copy'
+'os'
+'random'
+'time'
+  hookspath: []
+  runtime_hooks: []
+  excludes: []
+  win_no_prefer_redirects: false
+  win_private_assemblies: false
+  cipher: null
+  noarchive: false
+console: false
+debug: false
+strip: false
+upx: true
+upx_exclude: []
+name: 'GENevolver3D'  # Replace with the desired name of your application
+# GUI options
+windowed: true
+# Additional options
+# If your script uses specific data files or directories, add them here.
+# For example:
+# datas: [['path/to/data/file', 'data'], ['another/path', 'data']]
