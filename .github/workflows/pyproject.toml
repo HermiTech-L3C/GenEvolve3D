@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools]
+name = "GENrevolve3D"
+version = "1.0.0"
+description = "A 3D Evolution Simulation Application"
+long_description = "file: README.md"
+long_description_content_type = "text/markdown"
+url = "https://github.com/yourusername/GENrevolve3D"
+author = "Your Name"
+author_email = "your.email@example.com"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+packages = find:
+package_dir = {"": "src"}
+include_package_data = True
+install_requires = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "scikit-learn",
+    "PyQt5",
+    # Add any other project-specific dependencies here
+]
+python_requires = ">=3.7"
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    .eggs
+    | .git
+    | .hg
+    | .mypy_cache
+    | .tox
+    | .venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+[tool.flake8]
+max-line-length = 120
+exclude = .tox,.git,*/migrations/*,*/static/CACHE/*,docs,node_modules
+[tool.isort]
+profile = "black"
+[tool.mypy]
+files = "src"
+ignore_missing_imports = true
+[tool.pyinstaller]
+main_script = "src/Main.py"
+onefile = true
+noconsole = true
+additional_hooks_dir = "pyinstaller_hooks"
