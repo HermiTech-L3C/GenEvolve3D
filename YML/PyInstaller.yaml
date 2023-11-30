@@ -2,7 +2,7 @@
 block_cipher: null
 a:
   pathex:
-'/path/to/your/script'  # Replace with the actual path to your script directory
+'./src/Evolve3D.py'  # Replace with the actual path to your script directory
   binaries:
 ['/path/to/additional/binary/if/any', '.']  # Include additional binaries if needed
   datas: []
