@@ -17,6 +17,9 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: Install Numpy (Mayavi dependency)
+        run: pip install numpy
+
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
@@ -30,7 +33,7 @@ jobs:
         run: choco install nsis
 
       - name: Package as Installer
-        run: makensis ./installer_script.nsi
+        run: makensis ./install.nsi
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
