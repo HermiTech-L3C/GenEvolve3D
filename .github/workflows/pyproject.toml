@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "numpy>=1.21.2,<1.22"]
+requires = ["setuptools>=58.0.0", "wheel", "numpy>=1.21.2,<1.22"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -10,14 +10,18 @@ long_description = "file: README.md"
 long_description_content_type = "text/markdown"
 url = "https://github.com/HermiTech-L3C/GENrevolve3D"
 author = "HermiTech L3C"
-author_email = "Reel0112358.13@proton.me"
+author_email = "contact@hermitech-l3c.com"
+license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-keywords = ["simulation", "evolution", "3D", "learning"]
+keywords = ["simulation", "evolution", "3D", "learning", "artificial intelligence"]
 packages = find:
 package_dir = {"": "src"}
 include_package_data = True
@@ -27,13 +31,15 @@ install_requires = [
     "matplotlib>=3.4,<3.5",
     "scikit-learn>=0.24,<0.25",
     "PyQt5>=5.15,<5.16",
+    "vtk>=9.0.3",
     "mayavi>=4.7,<4.8",
-    # Add any other project-specific dependencies here
+    # Consider adding other dependencies here
 ]
 extras_require = {
-    "dev": ["pytest>=6.0,<7", "mypy", "flake8", "black"]
+    "dev": ["pytest>=6.0,<7", "mypy>=0.910", "flake8>=3.9.0", "black>=21.5b0"],
+    "docs": ["sphinx>=4.0.0", "sphinx-rtd-theme>=0.5.2"]
 }
-python_requires = ">=3.7"
+python_requires = ">=3.9,<4.0"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -62,17 +68,24 @@ exclude = '''
 
 [tool.flake8]
 max-line-length = 120
+ignore = E203, E266, E501, W503
 exclude = .tox,.git,*/migrations/*,*/static/CACHE/*,docs,node_modules
+max-complexity = 18
+select = B,C,E,F,W,T4,B9
 
 [tool.isort]
 profile = "black"
+line_length = 120
+skip = .tox,.git,*/migrations/*,*/static/CACHE/*,docs,node_modules
 
 [tool.mypy]
 files = "src"
-ignore_missing_imports = false 
+ignore_missing_imports = true
+disallow_untyped_defs = true
 
 [tool.pyinstaller]
 main_script = "src/Main.py"
 onefile = true
 noconsole = true
 additional_hooks_dir = "pyinstaller_hooks"
+icon = "path/to/your/app-icon.ico"
