@@ -1,4 +1,4 @@
-# GENrevolve3D: Genetic Evolution Simulation
+# GenEvolve3D: Genetic Evolution Simulation
 
 ## Overview
 GENrevolve3D combines neural networks and genetic algorithms to simulate genetic evolution in an artificial environment, enhanced with 3D visualizations.
