@@ -9,19 +9,26 @@ on:
 jobs:
   build-and-package:
     runs-on: windows-latest
+    env:
+      PYTHON_VERSION: 3.9
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
         run: |
-          pip install wheel
-          pip install numpy
-          pip install mayavi
           pip install -r requirements.txt
 
       - name: Install NSIS
@@ -29,7 +36,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --hidden-import=numpy --collect-binaries numpy Src/Main.py
+          pyinstaller --onefile --noconsole --paths src --hidden-import=numpy --additional-hooks-dir=pyinstaller_hooks --name Main Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
