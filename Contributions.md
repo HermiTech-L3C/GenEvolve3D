@@ -1,6 +1,6 @@
-# Contributing to GENrevolve3D
+# Contributing to GenEvolve3D
 
-We welcome contributions to the GENrevolve3D project. If you have suggestions or would like to contribute code, please follow these guidelines.
+We welcome contributions to the GenEvolve3D project. If you have suggestions or would like to contribute code, please follow these guidelines.
 
 ## Code Contributions
 Before contributing code, please consider the following:
@@ -29,4 +29,4 @@ Contributions are accepted under the same license as the GENrevolve3D project (s
 ## Acknowledgments
 Contributors who help improve GENrevolve3D will be acknowledged in project documentation.
 
-Thank you for your interest in contributing to GENrevolve3D. Your efforts help make this project better for everyone!
+Thank you for your interest in contributing to GenEvolve3D. Your efforts help make this project better for everyone!
