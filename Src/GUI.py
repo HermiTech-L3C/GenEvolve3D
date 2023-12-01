@@ -85,6 +85,13 @@ class EvolutionGUI(QMainWindow):
         super().__init__()
         self.evolution = evolution
         self.initUI()
+        self.software_render_checkbox = QCheckBox("Use Software Rendering", self)
+        self.software_render_checkbox.stateChanged.connect(self.toggle_software_rendering)
+        self.layout.addWidget(self.software_render_checkbox)
+
+    def toggle_software_rendering(self, state):
+        self.mayavi_qt_widget.mayavi_widget.software_rendering = state == Qt.Checked
+
 
     def initUI(self):
         self.setWindowTitle('Evolution Simulation')
