@@ -54,8 +54,3 @@ jobs:
         with:
           name: GENrevolve3D-Installer
           path: .\dist\Main.exe
-
-        uses: actions/upload-artifact@v2
-        with:
-          name: GENrevolve3D-Installer
-          path: .\dist\Main.exe
