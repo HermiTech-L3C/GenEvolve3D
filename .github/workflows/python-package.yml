@@ -42,4 +42,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: GENrevolve3D-Installer
-        path: ./dist/Main.exe
+        path: ./dist/GENrevolve3D-Setup.exe
