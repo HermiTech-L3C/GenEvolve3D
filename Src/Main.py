@@ -1,5 +1,5 @@
 from Evolve3D import Evolution
-from gui import EvolutionGUI
+from GUI import EvolutionGUI
 from PyQt5.QtWidgets import QApplication
 import sys
 
