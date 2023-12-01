@@ -26,13 +26,17 @@ jobs:
       - name: Install Other Python dependencies
         run: pip install -r requirements.txt
 
+      # Uncomment the following lines if tests are included in the project
+      # - name: Run Tests
+      #   run: pytest
+
       - name: Install NSIS
         run: choco install nsis
 
       - name: Build Executable with PyInstaller
         run: |
-          python -c "import numpy; print(numpy.__path__)"
-          pyinstaller --onefile --noconsole --paths src --add-binary "$(python -c "import numpy; import os; print(os.path.join(numpy.__path__[0], '.libs', '*.dll'))");." Src/Main.py
+          $numpyPath = python -c "import numpy; import os; print(os.path.join(numpy.__path__[0], 'core'))"
+          pyinstaller --onefile --noconsole --paths src --add-binary "$numpyPath\*.dll;." Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
@@ -41,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: GENrevolve3D-Installer
-          path: ./dist/Main.exe
+          path: .\dist\Main.exe
