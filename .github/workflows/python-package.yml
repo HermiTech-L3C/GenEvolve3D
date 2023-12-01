@@ -29,11 +29,11 @@ jobs:
    # - name: Run tests
     #  run: pytest
 
-    - name: Build Executable with PyInstaller
-      run: pyinstaller --onefile --noconsole --paths src Src/Main.py
-
     - name: Install NSIS
       run: choco install nsis
+
+    - name: Build Executable with PyInstaller
+      run: pyinstaller --onefile --noconsole --paths src Src/Main.py
 
     - name: Package as Installer
       run: makensis .github/workflows/install.nsi
