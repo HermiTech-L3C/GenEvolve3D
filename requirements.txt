@@ -1,3 +1,4 @@
+wheel
 numpy>=1.22
 scipy>=1.10.0
 matplotlib==3.4.3
@@ -8,4 +9,3 @@ PyQt5-sip==12.9.0
 mayavi==4.7.3
 vtk==9.0.3
 pyinstaller==4.5.1
-wheel
