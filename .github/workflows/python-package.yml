@@ -31,7 +31,8 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --exclude-module numpy Src/Main.py
+          $numpyPath = python -c "import numpy; import os; print(os.path.dirname(numpy.__file__))"
+          pyinstaller --onefile --noconsole --paths src --add-binary "$numpyPath/*.pyd;./numpy" Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
