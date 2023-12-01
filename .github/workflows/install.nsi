@@ -17,7 +17,9 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "dist\Main.exe"  ; Relative path to the built executable
+
+    ; Ensure the relative path is correctly pointing to the built executable
+    File "..\dist\Main.exe"
 
     ; Create program directory and shortcut
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
