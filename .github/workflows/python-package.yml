@@ -17,22 +17,19 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Reinstall NumPy
-        run: pip install --upgrade --force-reinstall numpy
-
-      - name: Install Mayavi
-        run: pip install mayavi
-
-      - name: Install Other Python dependencies
-        run: pip install -r requirements.txt
+      - name: Install Python dependencies
+        run: |
+          pip install wheel
+          pip install numpy
+          pip install mayavi
+          pip install -r requirements.txt
 
       - name: Install NSIS
         run: choco install nsis
 
       - name: Build Executable with PyInstaller
         run: |
-          $numpyPath = python -c "import numpy; import os; print(os.path.dirname(numpy.__file__))"
-          pyinstaller --onefile --noconsole --paths src --add-binary "$numpyPath/*.pyd;./numpy" Src/Main.py
+          pyinstaller --onefile --noconsole --hidden-import=numpy --paths src Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
