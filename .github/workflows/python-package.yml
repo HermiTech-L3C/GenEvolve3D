@@ -10,33 +10,33 @@ jobs:
   build-and-package:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
 
-      - name: Install Numpy (Mayavi dependency)
-        run: pip install numpy
+    - name: Install Numpy (Mayavi dependency)
+      run: pip install numpy>=1.22
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
+    - name: Install Python dependencies without build isolation
+      run: pip install --no-build-isolation -r requirements.txt
 
-      - name: Run tests
-        run: pytest
+    - name: Run tests
+      run: pytest
 
-      - name: Build Executable with PyInstaller
-        run: pyinstaller --onefile --noconsole --add-data "src/data;data" --paths src ./src/Main.py
+    - name: Build Executable with PyInstaller
+      run: pyinstaller --onefile --noconsole --add-data "src/data;data" --paths src ./src/Main.py
 
-      - name: Install NSIS
-        run: choco install nsis
+    - name: Install NSIS
+      run: choco install nsis
 
-      - name: Package as Installer
-        run: makensis ./install.nsi
+    - name: Package as Installer
+      run: makensis ./install.nsi
 
-      - name: Upload Packaged Application
-        uses: actions/upload-artifact@v2
-        with:
-          name: GENrevolve3D-Installer
-          path: ./dist/GENrevolve3D-Setup.exe
+    - name: Upload Packaged Application
+      uses: actions/upload-artifact@v2
+      with:
+        name: GENrevolve3D-Installer
+        path: ./dist/GENrevolve3D-Setup.exe
