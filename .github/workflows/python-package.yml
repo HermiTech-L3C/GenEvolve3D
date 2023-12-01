@@ -30,7 +30,7 @@ jobs:
     #  run: pytest
 
     - name: Build Executable with PyInstaller
-      run: pyinstaller --onefile --noconsole --add-data "src/data;data" --paths src ./src/Main.py
+      run: pyinstaller --onefile --noconsole --paths src ./src/Main.py
 
     - name: Install NSIS
       run: choco install nsis
