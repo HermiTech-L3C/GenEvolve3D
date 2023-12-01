@@ -17,8 +17,8 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install Numpy (Mayavi dependency)
-      run: pip install numpy>=1.22
+    - name: Install Wheel
+      run: pip install wheel
 
     - name: Install Python dependencies without build isolation
       run: pip install --no-build-isolation -r requirements.txt
