@@ -17,11 +17,14 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install Wheel
-      run: pip install wheel
+    - name: Install Wheel and NumPy
+      run: pip install wheel numpy
 
-    - name: Install Python dependencies without build isolation
-      run: pip install --no-build-isolation -r requirements.txt
+    - name: Install Mayavi
+      run: pip install mayavi
+
+    - name: Install Other Python dependencies
+      run: pip install -r requirements.txt
 
     - name: Run tests
       run: pytest
