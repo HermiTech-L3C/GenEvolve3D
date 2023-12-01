@@ -36,7 +36,7 @@ jobs:
       run: choco install nsis
 
     - name: Package as Installer
-      run: makensis ./install.nsi
+      run: makensis .github/workflows/install.nsi
 
     - name: Upload Packaged Application
       uses: actions/upload-artifact@v2
