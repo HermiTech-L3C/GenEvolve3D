@@ -30,7 +30,8 @@ jobs:
         run: choco install nsis
 
       - name: Build Executable with PyInstaller
-        run: pyinstaller --onefile --noconsole --paths src Src/Main.py
+        run: |
+          pyinstaller --onefile --noconsole --paths src --exclude-module numpy Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
