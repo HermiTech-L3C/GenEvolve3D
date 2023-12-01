@@ -17,25 +17,16 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-
-    ; Ensure the relative path is correctly pointing to the built executable
-    File "..\dist\Main.exe"
-
-    ; Create program directory and shortcut
+    File "D:\a\GENrevolve3D\GENrevolve3D\dist\Main.exe"  ; Make sure this path matches the location of the built executable
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\Main.exe"
-
-    ; Write the uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 Section "Uninstall"
-    ; Remove the installed files and shortcuts
     Delete "$INSTDIR\Main.exe"
     Delete "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk"
     Delete "$INSTDIR\Uninstall.exe"
-
-    ; Remove the program directories
     RMDir "$SMPROGRAMS\GENrevolve3D"
     RMDir "$INSTDIR"
 SectionEnd
