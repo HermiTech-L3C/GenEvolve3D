@@ -10,36 +10,35 @@ jobs:
   build-and-package:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
 
-    - name: Install Wheel and NumPy
-      run: pip install wheel numpy
+      - name: Install Wheel and NumPy
+        run: pip install wheel numpy
 
-    - name: Install Mayavi
-      run: pip install mayavi
+      - name: Install Mayavi
+        run: pip install mayavi
 
-    - name: Install Other Python dependencies
-      run: pip install -r requirements.txt
+      - name: Install Other Python dependencies
+        run: pip install -r requirements.txt
 
-   # - name: Run tests
-    #  run: pytest
+      - name: Install NSIS
+        run: choco install nsis
 
-    - name: Install NSIS
-      run: choco install nsis
+      - name: Build Executable with PyInstaller
+        run: |
+          python -c "import numpy; print(numpy.__path__)"
+          pyinstaller --onefile --noconsole --paths src --add-binary "$(python -c "import numpy; import os; print(os.path.join(numpy.__path__[0], '.libs', '*.dll'))");." Src/Main.py
 
-    - name: Build Executable with PyInstaller
-      run: pyinstaller --onefile --noconsole --paths src Src/Main.py
+      - name: Package as Installer
+        run: makensis .github/workflows/install.nsi
 
-    - name: Package as Installer
-      run: makensis .github/workflows/install.nsi
-
-    - name: Upload Packaged Application
-      uses: actions/upload-artifact@v2
-      with:
-        name: GENrevolve3D-Installer
-        path: .\dist\Main.exe
+      - name: Upload Packaged Application
+        uses: actions/upload-artifact@v2
+        with:
+          name: GENrevolve3D-Installer
+          path: ./dist/Main.exe
