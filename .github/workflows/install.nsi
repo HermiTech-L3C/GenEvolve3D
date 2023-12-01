@@ -21,6 +21,9 @@ Section "Install"
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\Main.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
+     ; Added file copy command  
+  File "/oname=$DESKTOP\GENinstaller.exe" "GENrevolve3D-Setup.exe"
+
 SectionEnd
 
 Section "Uninstall"
