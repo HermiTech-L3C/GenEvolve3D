@@ -59,7 +59,7 @@ exclude = .tox,.git,*/migrations/*,*/static/CACHE/*,docs,node_modules
 profile = "black"
 [tool.mypy]
 files = "src"
-ignore_missing_imports = true
+ignore_missing_imports = false 
 [tool.pyinstaller]
 main_script = "src/Main.py"
 onefile = true
