@@ -36,7 +36,8 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --hidden-import=numpy --additional-hooks-dir=pyinstaller_hooks --name Main Src/Main.py
+          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hook_num.py --paths src --name Main src/Main.py
+
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
