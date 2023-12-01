@@ -1,25 +1,22 @@
 name: Build and Package GENrevolve3D Application
-
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   build-and-package:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: 3.9
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
+uses: actions/checkout@v2
+name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Cache Python dependencies
+name: Cache Python dependencies
         uses: actions/cache@v2
         with:
           path: ~\AppData\Local\pip\Cache
@@ -27,43 +24,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install Python dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Check and Reinstall Key Dependencies
+name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade numpy scipy scikit-learn
+          pip install wheel
+          pip install numpy scipy scikit-learn
+          pip install -r requirements.txt
 
-      - name: Locate DLLs for NumPy, SciPy, and Scikit-Learn
+name: Verify NumPy Installation
         run: |
-          import os
-          import numpy
-          import scipy
-          import sklearn
+          python -c "import numpy; print(numpy.__version__); print(numpy.get_include())"
 
-          for package in [numpy, scipy, sklearn]:
-              package_path = os.path.dirname(package.__file__)
-              print(f"{package.__name__} is installed at: {package_path}")
-
-              for root, dirs, files in os.walk(package_path):
-                  for file in files:
-                      if file.endswith('.dll'):
-                          print(os.path.join(root, file))
-        shell: python
-
-      - name: Install NSIS
-        run: choco install nsis
-
-      - name: Build Executable with PyInstaller
+name: Build Executable with PyInstaller
         run: |
           pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hooks --paths src --name Main src/Main.py
+        env:
+          NUMPY_PATH: ${{ steps.install-numpy.outputs.numpy-path }}
 
-      - name: Package as Installer
-        run: makensis .github/workflows/install.nsi
+name: Install NSIS
+        run: choco install nsis
 
-      - name: Upload Packaged Application
+name: Package as Installer
+        run: |
+          makensis .github/workflows/install.nsi
+
+name: Upload Packaged Application
         uses: actions/upload-artifact@v2
         with:
           name: GENrevolve3D-Installer
