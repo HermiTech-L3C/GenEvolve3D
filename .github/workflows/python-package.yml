@@ -31,13 +31,34 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Check and Reinstall Key Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade numpy scipy scikit-learn
+
+      - name: Locate DLLs for NumPy, SciPy, and Scikit-Learn
+        run: |
+          import os
+          import numpy
+          import scipy
+          import sklearn
+
+          for package in [numpy, scipy, sklearn]:
+              package_path = os.path.dirname(package.__file__)
+              print(f"{package.__name__} is installed at: {package_path}")
+
+              for root, dirs, files in os.walk(package_path):
+                  for file in files:
+                      if file.endswith('.dll'):
+                          print(os.path.join(root, file))
+        shell: python
+
       - name: Install NSIS
         run: choco install nsis
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hook_num.py --paths src --name Main src/Main.py
-
+          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hooks --paths src --name Main src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
