@@ -6,7 +6,7 @@ GenEvolve3D combines neural networks and genetic algorithms to simulate genetic 
 ## Quick Start
 - **Installation:** `git clone [repository link]` then `pip install -r requirements.txt`
 - **Run Simulation:** Execute `python3 main.py`
-- **Documentation & Examples:** See [Documentation Link] and `Demo_Tests` directory.
+- **Documentation & Examples:** See `Demo_Tests` directory.
 
 ## Features
 - Evolutionary modeling with generational tracking.
