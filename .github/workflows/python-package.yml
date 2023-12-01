@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --hidden-import=numpy --paths src Src/Main.py
+          pyinstaller --onefile --noconsole --paths src --hidden-import=numpy --collect-binaries numpy Src/Main.py
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
