@@ -48,11 +48,20 @@ class MayaviQWidget(QWidget):
         self.mayavi_widget = MayaviWidget(evolution, self.visualization_widget)
 
 class MayaviWidget:
-    def __init__(self, evolution, parent_widget):
+    def __init__(self, evolution, parent_widget, software_rendering=False):
         self.evolution = evolution
+        self.software_rendering = software_rendering
+
+        if self.software_rendering:
+            # Configure for software rendering, e.g., using Mesa 3D
+            from tvtk.api import tvtk
+            tvtk.RenderWindow().off_screen_rendering = True
+
         self.figure = mlab.figure(size=(800, 800), bgcolor=(0.5, 0.5, 0.5))
         self.continue_running = True
         self.parent_widget = parent_widget
+
+
 
     def run_evolution(self, update_signal):
         while self.continue_running:
