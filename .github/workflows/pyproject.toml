@@ -1,5 +1,6 @@
+pyproject.toml:
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=42", "wheel", "numpy"]
 build-backend = "setuptools.build_meta"
 [tool.setuptools]
 name = "GENrevolve3D"
@@ -8,7 +9,7 @@ description = "A 3D Evolution Simulation Application"
 long_description = "file: README.md"
 long_description_content_type = "text/markdown"
 url = "https://github.com/HermiTech-L3C/GENrevolve3D"
-author = "Ant O, Greene"
+author = "HermiTech L3C"
 author_email = "Reel0112358.13@proton.me"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,6 +25,7 @@ install_requires = [
     "matplotlib",
     "scikit-learn",
     "PyQt5",
+    "mayavi",
     # Add any other project-specific dependencies here
 ]
 python_requires = ">=3.7"
