@@ -1,74 +1,33 @@
-import sys
-import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QSlider, QLabel
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+import wx
+import threading
+import time
 from mayavi import mlab
-from tvtk.api import tvtk
-from Evolve3D import Evolution  # Assuming Evolve3D.py contains the Evolution class
+from Evolve3D import Evolution
 
-os.environ['QT_API'] = 'pyqt5'
-
-class EvolutionThread(QThread):
-    update_signal = pyqtSignal(int, float)
-
-    def __init__(self, mayavi_widget, evolution):
-        super().__init__()
+class EvolutionThread(threading.Thread):
+    def __init__(self, mayavi_widget, evolution, update_callback):
+        threading.Thread.__init__(self)
         self.mayavi_widget = mayavi_widget
         self.evolution = evolution
+        self.update_callback = update_callback
+        self.daemon = True
 
     def run(self):
-        self.mayavi_widget.run_evolution(self.update_signal)
-
-class MayaviQWidget(QWidget):
-    def __init__(self, parent=None):
-        super(MayaviQWidget, self).__init__(parent)
-        layout = QVBoxLayout(self)
-        self.visualization_widget = self.create_mayavi_widget()
-        layout.addWidget(self.visualization_widget)
-
-    def create_mayavi_widget(self):
-        from mayavi.core.ui.api import MayaviScene, MlabSceneModel, SceneEditor
-        from traits.api import HasTraits, Instance
-        from traitsui.api import View, Item
-
-        class Container(HasTraits):
-            scene = Instance(MlabSceneModel, ())
-
-            @View
-            def default_traits_view(self):
-                return View(Item('scene', editor=SceneEditor(scene_class=MayaviScene),
-                                 height=250, width=300, show_label=False))
-
-        container = Container()
-        mayavi_widget = QWidget()
-        ui = container.edit_traits(parent=mayavi_widget, kind='subpanel').control
-        return mayavi_widget
-
-    def initialize(self, evolution):
-        self.mayavi_widget = MayaviWidget(evolution, self.visualization_widget)
+        self.mayavi_widget.run_evolution(self.update_callback)
 
 class MayaviWidget:
-    def __init__(self, evolution, parent_widget, software_rendering=False):
+    def __init__(self, evolution, parent_widget):
         self.evolution = evolution
-        self.software_rendering = software_rendering
-
-        if self.software_rendering:
-            # Configure for software rendering, e.g., using Mesa 3D
-            from tvtk.api import tvtk
-            tvtk.RenderWindow().off_screen_rendering = True
-
         self.figure = mlab.figure(size=(800, 800), bgcolor=(0.5, 0.5, 0.5))
         self.continue_running = True
         self.parent_widget = parent_widget
 
-
-
-    def run_evolution(self, update_signal):
+    def run_evolution(self, update_callback):
         while self.continue_running:
             self.evolution.run_generation()
             self.draw_gene_network()
-            update_signal.emit(self.evolution.generation, self.evolution.average_fitness)
-            QThread.msleep(500)
+            wx.CallAfter(update_callback, self.evolution.generation, self.evolution.average_fitness)
+            time.sleep(0.5)
 
     def draw_gene_network(self):
         mlab.clf(self.figure)
@@ -80,76 +39,57 @@ class MayaviWidget:
     def stop(self):
         self.continue_running = False
 
-class EvolutionGUI(QMainWindow):
-    def __init__(self, evolution):
-        super().__init__()
+class EvolutionGUI(wx.Frame):
+    def __init__(self, parent, evolution):
+        wx.Frame.__init__(self, parent, title='Evolution Simulation', size=(800, 600))
         self.evolution = evolution
         self.initUI()
-        self.software_render_checkbox = QCheckBox("Use Software Rendering", self)
-        self.software_render_checkbox.stateChanged.connect(self.toggle_software_rendering)
-        self.layout.addWidget(self.software_render_checkbox)
-
-    def toggle_software_rendering(self, state):
-        self.mayavi_qt_widget.mayavi_widget.software_rendering = state == Qt.Checked
-
 
     def initUI(self):
-        self.setWindowTitle('Evolution Simulation')
-        self.main_widget = QWidget(self)
-        self.setCentralWidget(self.main_widget)
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.layout = QVBoxLayout(self.main_widget)
+        self.mayavi_widget = MayaviWidget(self.evolution, panel)
+        # TODO: Add Mayavi widget integration here
 
-        self.mayavi_qt_widget = MayaviQWidget(self)
-        self.mayavi_qt_widget.initialize(self.evolution)
-        self.layout.addWidget(self.mayavi_qt_widget)
+        self.start_button = wx.Button(panel, label='Start Evolution')
+        self.start_button.Bind(wx.EVT_BUTTON, self.start_evolution)
+        vbox.Add(self.start_button, flag=wx.EXPAND|wx.ALL, border=5)
 
-        self.start_button = QPushButton('Start Evolution', self)
-        self.start_button.clicked.connect(self.start_evolution)
-        self.layout.addWidget(self.start_button)
+        self.stop_button = wx.Button(panel, label='Stop Evolution')
+        self.stop_button.Bind(wx.EVT_BUTTON, self.stop_evolution)
+        self.stop_button.Disable()
+        vbox.Add(self.stop_button, flag=wx.EXPAND|wx.ALL, border=5)
 
-        self.stop_button = QPushButton('Stop Evolution', self)
-        self.stop_button.clicked.connect(self.stop_evolution)
-        self.stop_button.setEnabled(False)
-        self.layout.addWidget(self.stop_button)
+        self.mutation_label = wx.StaticText(panel, label='Mutation Rate: 0.1')
+        vbox.Add(self.mutation_label, flag=wx.ALL, border=5)
 
-        self.mutation_label = QLabel('Mutation Rate: 0.1', self)
-        self.layout.addWidget(self.mutation_label)
+        self.mutation_slider = wx.Slider(panel, value=10, minValue=0, maxValue=20, style=wx.SL_HORIZONTAL)
+        self.mutation_slider.Bind(wx.EVT_SLIDER, self.change_mutation_rate)
+        vbox.Add(self.mutation_slider, flag=wx.EXPAND|wx.ALL, border=5)
 
-        self.mutation_slider = QSlider(Qt.Horizontal, self)
-        self.mutation_slider.setMinimum(0)
-        self.mutation_slider.setMaximum(20)
-        self.mutation_slider.setValue(int(self.evolution.mutation_rate * 100))
-        self.mutation_slider.valueChanged[int].connect(self.change_mutation_rate)
-        self.layout.addWidget(self.mutation_slider)
+        self.status_label = wx.StaticText(panel, label='Generation: 0\nAverage Fitness: 0.0')
+        vbox.Add(self.status_label, flag=wx.ALL, border=5)
 
-        self.status_label = QLabel('Generation: 0\nAverage Fitness: 0.0', self)
-        self.layout.addWidget(self.status_label)
+        panel.SetSizer(vbox)
+        self.Show(True)
 
-        self.evolution_thread = EvolutionThread(self.mayavi_qt_widget.mayavi_widget, self.evolution)
-        self.evolution_thread.update_signal.connect(self.update_status)
-
-    def start_evolution(self):
-        self.start_button.setEnabled(False)
-        self.stop_button.setEnabled(True)
+    def start_evolution(self, event):
+        self.start_button.Disable()
+        self.stop_button.Enable()
+        self.evolution_thread = EvolutionThread(self.mayavi_widget, self.evolution, self.update_status)
         self.evolution_thread.start()
 
-    def stop_evolution(self):
-        self.mayavi_qt_widget.mayavi_widget.stop()
-        self.evolution_thread.wait()
-        self.stop_button.setEnabled(False)
-        self.start_button.setEnabled(True)
+    def stop_evolution(self, event):
+        self.mayavi_widget.stop()
+        self.evolution_thread.join()
+        self.stop_button.Disable()
+        self.start_button.Enable()
 
-    def change_mutation_rate(self, value):
+    def change_mutation_rate(self, event):
+        value = self.mutation_slider.GetValue()
         self.evolution.mutation_rate = value / 100.0
-        self.mutation_label.setText(f'Mutation Rate: {self.evolution.mutation_rate:.2f}')
+        self.mutation_label.SetLabel(f'Mutation Rate: {self.evolution.mutation_rate:.2f}')
 
     def update_status(self, generation, avg_fitness):
-        self.status_label.setText(f'Generation: {generation}\nAverage Fitness: {avg_fitness:.2f}')
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    evolution = Evolution(population_size=100)
-    gui = EvolutionGUI(evolution)
-    gui.show()
-    sys.exit(app.exec_())
+        self.status_label.SetLabel(f'Generation: {generation}\nAverage Fitness: {avg_fitness:.2f}')

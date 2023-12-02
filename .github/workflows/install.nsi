@@ -17,7 +17,7 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "D:\a\GENrevolve3D\GENrevolve3D\dist\Main.exe"  ; Make sure this path matches the location of the built executable
+    File "D:\a\GENrevolve3D\GENrevolve3D\dist\Main.exe"  ; Update this path if needed
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\Main.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"

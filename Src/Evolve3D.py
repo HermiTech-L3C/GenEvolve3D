@@ -121,10 +121,11 @@ class Evolution:
             if random.random() < self.mutation_rate:
                 child.mutate()
             next_generation.append(child)
-        return next_generation
+            return next_generation
 
-    def crossover(self, genome1, genome2):
-        new_genes = random.sample(genome1.genes, len(genome1.genes) // 2) + random.sample(genome2.genes, len(genome2.genes) // 2)
+        def crossover(self, genome1, genome2):
+            new_genes = random.sample(genome1.genes, len(genome1.genes) // 2) + random.sample(genome2.genes, len(genome2.genes) // 2)
         if not new_genes:
             new_genes.append(random.choice(genome1.genes + genome2.genes))
-        return Genome(new_genes)
+            return Genome(new_genes)
+
