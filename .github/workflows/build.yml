@@ -1,0 +1,59 @@
+name: Build and Package GENrevolve3D Application
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+    env:
+      PYTHON_VERSION: '3.11'  # Updated Python version
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.pip/cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel numpy pygame PyOpenGL PyOpenGL_accelerate
+          pip install -r requirements.txt
+
+      - name: Verify NumPy Installation
+        run: |
+          python -c "import numpy; print(numpy.__version__); print(numpy.get_include())"
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+        working-directory: ${{ github.workspace }}
+
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+
+      - name: Package as Installer
+        run: |
+          makensis install.nsi
+        working-directory: ${{ github.workspace }}
+
+      - name: Upload Packaged Application
+        uses: actions/upload-artifact@v2
+        with:
+          name: GenEvolve3D-Installer
+          path: ./GENrevolve3D-Setup.exe
