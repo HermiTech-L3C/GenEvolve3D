@@ -1,11 +1,10 @@
 wheel
 numpy>=1.22
-scipy>=1.10.0
 matplotlib>=3.4.3
 scikit-learn>=0.24.2
 pytest>=6.2.5
-wxPython>=4.1.1  # Replacing PyQt5 with wxPython
-vtk>=9.0.3
+PyOpenGL>=3.1.0
+PyOpenGL_accelerate>=3.1.0
+pygame>=2.0.0
 pyinstaller>=4.5.1
 tornado
-mayavi>=4.8.1
