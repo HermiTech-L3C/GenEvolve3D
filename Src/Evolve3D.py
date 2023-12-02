@@ -128,4 +128,3 @@ class Evolution:
         if not new_genes:
             new_genes.append(random.choice(genome1.genes + genome2.genes))
             return Genome(new_genes)
-
