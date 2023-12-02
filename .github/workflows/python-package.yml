@@ -2,9 +2,11 @@ name: Build and Package GENrevolve3D Application
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build-and-package:
@@ -40,7 +42,8 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths  ./dist/GenEvolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+        working-directory: ${{ github.workspace }}
 
       - name: Install NSIS
         run: |
