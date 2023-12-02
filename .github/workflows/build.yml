@@ -11,6 +11,7 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.11'  # Updated Python version
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -40,20 +41,46 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
+          if not exist src\GenEvolve3D.py (
+            echo "Error: src\GenEvolve3D.py not found."
+            exit 1
+          )
           pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+          if %errorlevel% neq 0 (
+            echo "Error: PyInstaller failed."
+            exit 1
+          )
         working-directory: ${{ github.workspace }}
+
+      - name: Check GenEvolve3D.exe
+        run: |
+          if not exist dist\GenEvolve3D.exe (
+            echo "Error: GenEvolve3D.exe not found."
+            exit 1
+          )
 
       - name: Install NSIS
         run: |
           choco install nsis -y
 
+      - name: Copy NSIS script to working directory
+        run: |
+          if not exist .github/workflows/install.nsi (
+            echo "Error: .github/workflows/install.nsi not found."
+            exit 1
+          )
+          copy src/install.nsi .github/workflows/install.nsi
+
       - name: Package as Installer
         run: |
-          makensis install.nsi
-        working-directory: ${{ github.workspace }}
+          makensis .github/workflows/install.nsi
+          if %errorlevel% neq 0 (
+            echo "Error: NSIS script compilation failed."
+            exit 1
+          )
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: ./GENrevolve3D-Setup.exe
+          path: ./dist/GenEvolve3D.exe
