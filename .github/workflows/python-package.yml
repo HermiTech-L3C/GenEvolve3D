@@ -39,7 +39,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hooks --paths src --name Main src/Evolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name Main Src/Evolve3D.py
 
       - name: Install NSIS
         run: choco install nsis
