@@ -24,7 +24,7 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
-    Delete "$INSTDIR\Main.exe"
+    Delete "$INSTDIR\GenEvolve3D.exe"
     Delete "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk"
     Delete "$INSTDIR\Uninstall.exe"
     RMDir "$SMPROGRAMS\GENrevolve3D"
