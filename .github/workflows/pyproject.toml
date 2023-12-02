@@ -26,18 +26,18 @@ packages = find:
 package_dir = {"": "src"}
 include_package_data = True
 install_requires = [
-    "numpy>=1.21.2",  # Adjusted numpy version constraint
-    "pandas>=1.2",  # Adjusted pandas version constraint
-    "matplotlib>=3.4",  # Adjusted matplotlib version constraint
-    "scikit-learn>=0.24",  # Adjusted scikit-learn version constraint
-    "wxpython>=4.1",  # Replaced PyQt5 with wxPython
+    "numpy>=1.21.2",
+    "pandas>=1.2",
+    "matplotlib>=3.4",
+    "scikit-learn>=0.24",
+    "wxpython>=4.1",
     "vtk>=9.0.3",
-    "mayavi>=4.7",  # Adjusted mayavi version constraint
-    # Other dependencies can be listed here
+    "mayavi>=4.7",
+    # Add other dependencies as needed
 ]
 extras_require = {
     "dev": ["pytest>=6.0", "mypy>=0.910", "flake8>=3.9.0", "black>=21.5b0", "twine>=3.4.2"],
     "docs": ["sphinx>=4.0.0", "sphinx-rtd-theme>=0.5.2"],
-    # Include any additional extra requirements here
+    # Additional extra requirements can be added here
 }
-python_requires = ">=3.11,<4.0"  # Updated Python version requirement
+python_requires = ">=3.11,<4.0"
