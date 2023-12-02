@@ -2,15 +2,14 @@
 requires = ["setuptools>=58.0.0", "wheel", "numpy>=1.21.2"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
+[tool.poetry]
 name = "GENrevolve3D"
 version = "1.0.0"
 description = "A 3D Evolution Simulation Application"
 long_description = "file: README.md"
 long_description_content_type = "text/markdown"
 url = "https://github.com/HermiTech-L3C/GENrevolve3D"
-author = "HermiTech L3C"
-author_email = "contact@hermitech-l3c.com"
+author = "HermiTech L3C <contact@hermitech-l3c.com>"
 license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -22,19 +21,18 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 keywords = ["simulation", "evolution", "3D", "learning", "artificial intelligence"]
-packages = find:
-package_dir = {"": "src"}
-include_package_data = True
+packages = [
+    { include = "src", from = "." }
+]
+include_package_data = true
 install_requires = [
     "numpy>=1.21.2",
     "pygame>=2.0.0",
     "PyOpenGL>=3.1.0",
     "PyOpenGL_accelerate>=3.1.0",
-    # Other dependencies can be listed here
 ]
-extras_require = {
+extras = {
     "dev": ["pytest>=6.0", "mypy>=0.910", "flake8>=3.9.0", "black>=21.5b0", "twine>=3.4.2"],
     "docs": ["sphinx>=4.0.0", "sphinx-rtd-theme>=0.5.2"],
-    # Include any additional extra requirements here
 }
-python_requires = ">=3.11,<4.0"
+python = ">=3.11,<4.0"
