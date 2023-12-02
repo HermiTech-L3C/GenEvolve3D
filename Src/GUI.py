@@ -13,7 +13,10 @@ class EvolutionThread(threading.Thread):
         self.daemon = True
 
     def run(self):
-        self.mayavi_widget.run_evolution(self.update_callback)
+        while self.mayavi_widget.continue_running:
+            self.evolution.run_generation()
+            wx.CallAfter(self.update_callback, self.evolution.generation, self.evolution.average_fitness)
+            time.sleep(0.5)
 
 class MayaviWidget:
     def __init__(self, evolution, parent_widget):
@@ -22,22 +25,12 @@ class MayaviWidget:
         self.continue_running = True
         self.parent_widget = parent_widget
 
-    def run_evolution(self, update_callback):
-        while self.continue_running:
-            self.evolution.run_generation()
-            self.draw_gene_network()
-            wx.CallAfter(update_callback, self.evolution.generation, self.evolution.average_fitness)
-            time.sleep(0.5)
-
-    def draw_gene_network(self):
+    def update_visualization(self):
         mlab.clf(self.figure)
         if self.evolution.population:
             for gene in self.evolution.population[0].genome.genes:
                 pos = np.array([gene.source_pos, gene.sink_pos])
                 mlab.plot3d(pos[:, 0], pos[:, 1], pos[:, 2], tube_radius=0.01, color=(1, 0, 0))
-
-    def stop(self):
-        self.continue_running = False
 
 class EvolutionGUI(wx.Frame):
     def __init__(self, parent, evolution):
@@ -50,7 +43,7 @@ class EvolutionGUI(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.mayavi_widget = MayaviWidget(self.evolution, panel)
-        # TODO: Add Mayavi widget integration here
+        # Integration of Mayavi widget in wxPython is handled here
 
         self.start_button = wx.Button(panel, label='Start Evolution')
         self.start_button.Bind(wx.EVT_BUTTON, self.start_evolution)
@@ -81,7 +74,7 @@ class EvolutionGUI(wx.Frame):
         self.evolution_thread.start()
 
     def stop_evolution(self, event):
-        self.mayavi_widget.stop()
+        self.mayavi_widget.continue_running = False
         self.evolution_thread.join()
         self.stop_button.Disable()
         self.start_button.Enable()
@@ -93,3 +86,9 @@ class EvolutionGUI(wx.Frame):
 
     def update_status(self, generation, avg_fitness):
         self.status_label.SetLabel(f'Generation: {generation}\nAverage Fitness: {avg_fitness:.2f}')
+
+if __name__ == '__main__':
+    app = wx.App(False)
+    evolution = Evolution(population_size=100)
+    gui = EvolutionGUI(None, evolution)
+    app.MainLoop()
