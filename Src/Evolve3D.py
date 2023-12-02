@@ -108,7 +108,7 @@ class OpenGLWidget:
         glTranslatef(0, 0, -5)
         self.initialized = True
         
-            def run_evolution(self):
+    def run_evolution(self):
         if not self.initialized:
             self.init_gl()
 
