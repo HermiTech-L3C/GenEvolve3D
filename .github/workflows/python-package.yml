@@ -2,9 +2,9 @@ name: Build and Package GENrevolve3D Application
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-package:
@@ -12,7 +12,8 @@ jobs:
     env:
       PYTHON_VERSION: '3.11'  # Updated Python version
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -22,7 +23,7 @@ jobs:
       - name: Cache Python dependencies
         uses: actions/cache@v2
         with:
-          path: ~\AppData\Local\pip\Cache
+          path: ~/.pip/cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
@@ -39,10 +40,11 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GENrevolve3D src/Evolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/Evolve3D.py
 
       - name: Install NSIS
-        run: choco install nsis
+        run: |
+          choco install nsis -y
 
       - name: Package as Installer
         run: |
