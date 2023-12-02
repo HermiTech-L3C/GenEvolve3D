@@ -39,7 +39,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hooks --paths src --name Main src/Main.py
+          pyinstaller --onefile --noconsole --additional-hooks-dir=.github/workflows/hooks --paths src --name Main src/Evolve3D.py
 
       - name: Install NSIS
         run: choco install nsis
@@ -51,5 +51,5 @@ jobs:
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
         with:
-          name: GENrevolve3D-Installer
-          path: .\dist\Main.exe
+          name: GenEvolve3D-Installer
+          path: .\dist\GenEvolv3D.exe
