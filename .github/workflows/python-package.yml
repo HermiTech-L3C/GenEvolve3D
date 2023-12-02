@@ -52,4 +52,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: .\dist\GenEvolve3D.exe
+          path: ./dist/GenEvolve3D.exe
