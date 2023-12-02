@@ -2,11 +2,9 @@ name: Build and Package GENrevolve3D Application
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-package:
@@ -49,12 +47,47 @@ jobs:
         run: |
           choco install nsis -y
 
+      - name: Generate NSIS Script
+        run: |
+          echo '; GENrevolve3D Installer Script' > install.nsi
+          echo '!include "MUI2.nsh"' >> install.nsi
+          echo '' >> install.nsi
+          echo '; Installer configuration' >> install.nsi
+          echo 'Name "GENrevolve3D"' >> install.nsi
+          echo 'OutFile "GENrevolve3D-Setup.exe"' >> install.nsi
+          echo 'InstallDir "$PROGRAMFILES\GENrevolve3D"' >> install.nsi
+          echo 'ShowInstDetails show' >> install.nsi
+          echo 'ShowUnInstDetails show' >> install.nsi
+          echo '' >> install.nsi
+          echo '; Pages' >> install.nsi
+          echo '!insertmacro MUI_PAGE_WELCOME' >> install.nsi
+          echo '!insertmacro MUI_PAGE_DIRECTORY' >> install.nsi
+          echo '!insertmacro MUI_PAGE_INSTFILES' >> install.nsi
+          echo '!insertmacro MUI_PAGE_FINISH' >> install.nsi
+          echo '!insertmacro MUI_LANGUAGE "English"' >> install.nsi
+          echo '' >> install.nsi
+          echo 'Section "Install"' >> install.nsi
+          echo '    SetOutPath "$INSTDIR"' >> install.nsi
+          echo '    File "GenEvolve3D.exe"' >> install.nsi
+          echo '    CreateDirectory "$SMPROGRAMS\GENrevolve3D"' >> install.nsi
+          echo '    CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"' >> install.nsi
+          echo '    WriteUninstaller "$INSTDIR\Uninstall.exe"' >> install.nsi
+          echo 'SectionEnd' >> install.nsi
+          echo '' >> install.nsi
+          echo 'Section "Uninstall"' >> install.nsi
+          echo '    Delete "$INSTDIR\GenEvolve3D.exe"' >> install.nsi
+          echo '    Delete "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk"' >> install.nsi
+          echo '    Delete "$INSTDIR\Uninstall.exe"' >> install.nsi
+          echo '    RMDir "$SMPROGRAMS\GENrevolve3D"' >> install.nsi
+          echo '    RMDir "$INSTDIR"' >> install.nsi
+          echo 'SectionEnd' >> install.nsi
+
       - name: Package as Installer
         run: |
-          makensis .github/workflows/install.nsi
+          makensis install.nsi
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: ./dist/GenEvolve3D.exe
+          path: ./GENrevolve3D-Setup.exe
