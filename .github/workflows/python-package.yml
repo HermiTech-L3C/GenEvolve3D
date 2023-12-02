@@ -55,3 +55,27 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./dist/GenEvolve3D.exe
+
+          pip install -r requirements.txt
+
+      - name: Verify NumPy Installation
+        run: |
+          python -c "import numpy; print(numpy.__version__); print(numpy.get_include())"
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src\GenEvolve3D.py
+
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+
+      - name: Package as Installer
+        run: |
+          makensis .github/workflows/install.nsi
+
+      - name: Upload Packaged Application
+        uses: actions/upload-artifact@v2
+        with:
+          name: GenEvolve3D-Installer
+          path: ./dist/GenEvolve3D.exe
