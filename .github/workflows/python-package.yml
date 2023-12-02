@@ -39,7 +39,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/Evolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name GENrevolve3D src/Evolve3D.py
 
       - name: Install NSIS
         run: choco install nsis
