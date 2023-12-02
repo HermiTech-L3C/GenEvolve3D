@@ -40,8 +40,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-         pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src\GenEvolve3D.py
-
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src\GenEvolve3D.py
 
       - name: Install NSIS
         run: |
@@ -56,3 +55,4 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./dist/GenEvolve3D.exe
+
