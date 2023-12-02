@@ -10,7 +10,7 @@ jobs:
   build-and-package:
     runs-on: windows-latest
     env:
-      PYTHON_VERSION: '3.11'  # Updated Python version
+      PYTHON_VERSION: '3.11'  # Ensure compatibility with your Python version
     steps:
       - uses: actions/checkout@v2
 
