@@ -60,7 +60,14 @@ jobs:
         run: choco install nsis -y
 
       - name: Copy NSIS Script
-        run: cp ${{ steps.find_files.outputs.installerFile }} .
+        run: |
+          if (Test-Path -Path ${{ steps.find_files.outputs.installerFile }}) {
+            Copy-Item -Path ${{ steps.find_files.outputs.installerFile }} -Destination .
+          } else {
+            echo "Installer script not found."
+            exit 1
+          }
+        shell: pwsh
 
       - name: Package as Installer
         working-directory: ${{ github.workspace }}
