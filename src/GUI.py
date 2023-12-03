@@ -107,7 +107,7 @@ class OpenGLWidget:
         self.continue_running = False
 
     def init_gl(self):
-        pygame.init()  # Initialize Pygame here, but ensure it's not initialized multiple times.
+        pygame.init()
         pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
         gluPerspective(*PERSPECTIVE_SETTINGS)
         glTranslatef(*TRANSLATION_SETTINGS)
@@ -116,7 +116,7 @@ class OpenGLWidget:
         self.init_gl()
         self.continue_running = True
         while self.continue_running:
-            for event in pygame.event.get():  # Handling Pygame events in the same loop
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.continue_running = False
 
@@ -125,9 +125,9 @@ class OpenGLWidget:
 
             self.draw_gene_network()
             pygame.display.flip()
-            time.sleep(0.1)  # Adjusted delay for smoother updates
+            time.sleep(0.1)
 
-        pygame.quit()  # Ensure Pygame is properly quit
+        pygame.quit()
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -138,19 +138,34 @@ class OpenGLWidget:
             SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN
         )
 
+        glPointSize(5)
+        glBegin(GL_POINTS)
         for gene in self.evolution.population[0].genome.genes:
-            self.draw_node(gene.source_pos, gene.activity)
-            self.draw_node(gene.sink_pos, gene.activity)
-            self.draw_connection(gene.source_pos, gene.sink_pos)
+            glColor3f(*self.get_color_for_activity(gene.activity))
+            glVertex3fv(gene.source_pos)
+            glVertex3fv(gene.sink_pos)
+        glEnd()
+
+        glColor3f(1, 1, 1)
+        glBegin(GL_LINES)
+        for gene in self.evolution.population[0].genome.genes:
+            glVertex3fv(gene.source_pos)
+            glVertex3fv(gene.sink_pos)
+        glEnd()
 
     def draw_node(self, position, activity):
+        # Simplified node representation
         glPushMatrix()
         glTranslate(*position)
         glColor3f(*self.get_color_for_activity(activity))
-        glutSolidSphere(activity * 0.05, 20, 20)
+        glPointSize(activity * 5)
+        glBegin(GL_POINTS)
+        glVertex3f(0, 0, 0)
+        glEnd()
         glPopMatrix()
 
     def draw_connection(self, source_pos, sink_pos):
+        # Simplified connection representation
         glColor3f(1, 1, 1)
         glBegin(GL_LINES)
         glVertex3fv(source_pos)
