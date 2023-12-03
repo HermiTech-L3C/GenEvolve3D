@@ -8,12 +8,12 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-# Constants
+# Constants for OpenGL
 SCREEN_DIMENSIONS = (800, 600)
 PERSPECTIVE_SETTINGS = (45, 1, 0.1, 50.0)
 TRANSLATION_SETTINGS = (0, 0, -5)
 
-# Classes for Evolution Logic
+# Evolutionary Algorithm Classes
 class Gene:
     """ Represents a gene with mutation capability and activity level. """
     def __init__(self, source_type, source_num, sink_type, sink_num, weight):
@@ -119,13 +119,14 @@ class OpenGLWidget:
         while self.continue_running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
+                    self.stop()
 
-            self.evolution.run_generation()
+            if self.evolution.population:
+                self.evolution.run_generation()
+
             self.draw_gene_network()
             pygame.display.flip()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -141,8 +142,9 @@ class OpenGLWidget:
 
     def stop(self):
         self.continue_running = False
-
-# Tkinter-based GUI
+        pygame.quit()
+        
+        # Tkinter-based GUI
 class EvolutionGUI:
     """ Tkinter GUI for controlling the evolutionary simulation. """
     def __init__(self, evolution, opengl_widget):
