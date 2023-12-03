@@ -38,7 +38,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Build Executable
-        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
         shell: cmd
         working-directory: ${{ github.workspace }}
 
