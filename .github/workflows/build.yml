@@ -10,7 +10,7 @@ jobs:
   build-and-package:
     runs-on: windows-latest
     env:
-      PYTHON_VERSION: '3.11'  # Updated Python version
+      PYTHON_VERSION: '3.11'
 
     steps:
       - name: Checkout Code
@@ -21,65 +21,26 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.pip/cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel numpy pygame PyOpenGL PyOpenGL_accelerate
           pip install -r requirements.txt
 
-      - name: Verify NumPy Installation
-        run: |
-          python -c "import numpy; print(numpy.__version__); print(numpy.get_include())"
-
       - name: Build Executable with PyInstaller
         run: |
-          if (-Not (Test-Path src\GenEvolve3D.py)) {
-            Write-Host "Error: src\GenEvolve3D.py not found."
-            exit 1
-          }
           pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
-          if ($LastExitCode -ne 0) {
-            Write-Host "Error: PyInstaller failed."
-            exit 1
-          }
         shell: pwsh
-        env:
-          PYTHON_VERSION: 3.11
-          pythonLocation: C:\hostedtoolcache\windows\Python\3.11.6\x64
-
-      - name: Check GenEvolve3D.exe
-        run: |
-          if (-Not (Test-Path dist\GenEvolve3D.exe)) {
-            Write-Host "Error: GenEvolve3D.exe not found."
-            exit 1
-          }
 
       - name: Install NSIS
-        run: |
-          choco install nsis -y
-
-      - name: Copy NSIS script to working directory
-        run: |
-          if (-Not (Test-Path .github/workflows/install.nsi)) {
-            Write-Host "Error: .github/workflows/install.nsi not found."
-            exit 1
-          }
-          Copy-Item src/install.nsi .github/workflows/install.nsi
+        run: choco install nsis -y
 
       - name: Package as Installer
-        run: makensis .github/workflows/install.nsi
+        run: makensis installer.nsi
         working-directory: ${{ github.workspace }}
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: ./dist/GenEvolve3D.exe
+          path: ./GenEvolve3D-Setup.exe
