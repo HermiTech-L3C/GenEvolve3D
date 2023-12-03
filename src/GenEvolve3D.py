@@ -20,22 +20,20 @@ class Gene:
         self.source_type, self.source_num = source_type, source_num
         self.sink_type, self.sink_num = sink_type, sink_num
         self.weight = weight
-        self.source_pos, self.sink_pos = self.random_position(), self.random_position()
-        self.activity = 0
-
-    @staticmethod
-    def random_position():
-        return (
+        self.source_pos = (
             random.uniform(-0.8, 0.8),
             random.uniform(-0.8, 0.8),
             random.uniform(-0.8, 0.8)
         )
+        self.sink_pos = (
+            random.uniform(-0.8, 0.8),
+            random.uniform(-0.8, 0.8),
+            random.uniform(-0.8, 0.8)
+        )
+        self.activity = abs(weight)
 
     def mutate(self):
         self.weight += random.uniform(-0.1, 0.1)
-        self.update_activity()
-
-    def update_activity(self):
         self.activity = abs(self.weight)
 
 class Genome:
