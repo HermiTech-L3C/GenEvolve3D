@@ -21,15 +21,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Python dependencies
+      - name: Install Poetry
         run: |
-          python -m pip install --upgrade pip
-          pip install wheel numpy pygame PyOpenGL PyOpenGL_accelerate
-          pip install -r requirements.txt
+          pip install poetry
+
+      - name: Install dependencies with Poetry
+        run: |
+          poetry install
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+          poetry run pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
         shell: pwsh
 
       - name: Install NSIS
@@ -37,9 +39,7 @@ jobs:
 
       - name: Package as Installer
         run: |
-          # Copy the installer script from the GENrevolve3D directory to the GitHub workspace
           cp ./GENrevolve3D/installer.nsi ${{ github.workspace }}
-          # Run the NSIS script to create the installer
           makensis ${{ github.workspace }}\installer.nsi
         shell: pwsh
 
