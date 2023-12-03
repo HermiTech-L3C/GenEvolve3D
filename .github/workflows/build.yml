@@ -1,4 +1,4 @@
-name: Build and Package GENrevolve3D Application
+name: Build and Package GenEvolve3D Application
 
 on:
   push:
@@ -21,17 +21,14 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Poetry
+      - name: Install Python dependencies
         run: |
-          pip install poetry
-
-      - name: Install dependencies with Poetry
-        run: |
-          poetry install
+          python -m pip install --upgrade pip
+          pip install wheel numpy pygame PyOpenGL PyOpenGL_accelerate
 
       - name: Build Executable with PyInstaller
         run: |
-          poetry run pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
         shell: pwsh
 
       - name: Install NSIS
@@ -39,7 +36,7 @@ jobs:
 
       - name: Package as Installer
         run: |
-          cp ./GENrevolve3D/installer.nsi ${{ github.workspace }}
+          cp ./GenEvolve3D/installer.nsi ${{ github.workspace }}
           makensis ${{ github.workspace }}\installer.nsi
         shell: pwsh
 
