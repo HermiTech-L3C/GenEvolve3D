@@ -9,11 +9,8 @@ on:
       - main
 
 jobs:
-  build-and-package:
+  install-dependencies:
     runs-on: windows-latest
-    env:
-      PYTHON_VERSION: '3.11'
-
     steps:
       - name: Clear Workspace
         run: Remove-Item -Recurse -Force * -Exclude .git, .github
@@ -36,9 +33,25 @@ jobs:
           python -m pip install wheel  # Ensure wheel is installed
         shell: pwsh
 
+      - name: Install Visual Studio 2019 Build Tools
+        run: |
+          choco install visualstudio2019buildtools -y
+          choco install visualstudio2019-workload-vctools -y
+        shell: pwsh
+
       - name: Install Dependencies
         run: pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
+
+  build-and-package:
+    needs: install-dependencies
+    runs-on: windows-latest
+    env:
+      PYTHON_VERSION: '3.11'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
       - name: Build Executable
         run: |
@@ -59,12 +72,6 @@ jobs:
           cp -r ./dist/* ./staged_app/
           cp -r ./venv/Lib/site-packages/* ./staged_app/
         working-directory: ${{ github.workspace }}
-
-      - name: Install Build Tools for Visual Studio
-        run: |
-          choco install visualstudio2019buildtools -y
-          choco install visualstudio2019-workload-vctools -y
-        shell: pwsh
 
       - name: Package as Installer
         run: makensis .github/workflows/installer.nsi
