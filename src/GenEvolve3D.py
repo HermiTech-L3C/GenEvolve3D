@@ -106,7 +106,7 @@ class Evolution:
 class OpenGLWidget:
     def __init__(self, evolution):
         self.evolution = evolution
-        self.continue_running = True
+        self.continue_running = False
         self.initialized = False
 
     def init_gl(self):
@@ -121,10 +121,11 @@ class OpenGLWidget:
             self.init_gl()
 
         try:
+            self.continue_running = True  # Start the evolution loop
             while self.continue_running:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        self.stop()
+                        self.continue_running = False  # Stop the loop gracefully
 
                 if self.evolution.population:
                     self.evolution.run_generation()
@@ -134,7 +135,8 @@ class OpenGLWidget:
                 time.sleep(0.5)  # Slower frame rate
         except Exception as e:
             print("An error occurred in the OpenGL widget:", e)
-            self.stop()
+        finally:
+            pygame.quit()  # Close the pygame window
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -170,10 +172,6 @@ class OpenGLWidget:
         b = activity / 2  # Example color logic
         return r, g, b
 
-    def stop(self):
-        self.continue_running = False
-        pygame.quit()
-
 class EvolutionGUI:
     def __init__(self, evolution, opengl_widget):
         self.evolution = evolution
@@ -200,21 +198,13 @@ class EvolutionGUI:
         self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-
-        # Create a separate thread for the OpenGLWidget's run_evolution method
-        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()
-
-        # Disable the mutation rate scale while evolution is running
-        self.mutation_scale.config(state=tk.DISABLED)
+        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()  # Set thread as daemon
         self.update_status()
 
     def stop_evolution(self):
-        self.opengl_widget.stop()
+        self.opengl_widget.continue_running = False  # Stop the evolution loop
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
-
-        # Enable the mutation rate scale after stopping evolution
-        self.mutation_scale.config(state=tk.NORMAL)
 
     def update_status(self):
         if self.opengl_widget.continue_running:
