@@ -2,7 +2,7 @@
 !include "MUI2.nsh"
 
 ; Installer configuration
-Name "GenEvolve3D"
+Name "GENrevolve3D"
 OutFile "GenEvolve3D-Setup.exe"
 InstallDir "$PROGRAMFILES\GENrevolve3D"
 ShowInstDetails show
@@ -17,7 +17,7 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "./dist/GenEvolve3D.exe"
+    File "GenEvolve3D.exe"  ; Update this line to point to the correct executable path
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
