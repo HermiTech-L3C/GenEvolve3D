@@ -200,13 +200,21 @@ class EvolutionGUI:
         self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()  # Set thread as daemon
+
+        # Create a separate thread for the OpenGLWidget's run_evolution method
+        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()
+
+        # Disable the mutation rate scale while evolution is running
+        self.mutation_scale.config(state=tk.DISABLED)
         self.update_status()
 
     def stop_evolution(self):
         self.opengl_widget.stop()
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
+
+        # Enable the mutation rate scale after stopping evolution
+        self.mutation_scale.config(state=tk.NORMAL)
 
     def update_status(self):
         if self.opengl_widget.continue_running:
