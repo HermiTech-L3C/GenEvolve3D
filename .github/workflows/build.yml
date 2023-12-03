@@ -16,7 +16,8 @@ jobs:
 
     steps:
       - name: Clear Workspace
-        run: rm -rf ${{ github.workspace }}/*
+        run: Remove-Item -Recurse -Force .\* -Exclude .git, .github
+        shell: pwsh
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -62,3 +63,4 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D/dist/GenEvolve3D.exe
+
