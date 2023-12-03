@@ -25,7 +25,11 @@ class Gene:
 
     @staticmethod
     def random_position():
-        return (random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8))
+        return (
+            random.uniform(-0.8, 0.8),
+            random.uniform(-0.8, 0.8),
+            random.uniform(-0.8, 0.8)
+        )
 
     def mutate(self):
         self.weight += random.uniform(-0.1, 0.1)
@@ -65,7 +69,10 @@ class Evolution:
         self.average_fitness = 0
 
     def random_genome(self):
-        return Genome([Gene('type1', 0, 'type2', 1, random.uniform(-1, 1)) for _ in range(random.randint(1, 3))])
+        return Genome([
+            Gene('type1', 0, 'type2', 1, random.uniform(-1, 1))
+            for _ in range(random.randint(1, 3))
+        ])
 
     def run_generation(self):
         for ind in self.population:
@@ -90,7 +97,10 @@ class Evolution:
 
     def crossover(self, genome1, genome2):
         gene_split = len(genome1.genes) // 2
-        new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
+        new_genes = (
+            random.sample(genome1.genes, gene_split)
+            + random.sample(genome2.genes, len(genome2.genes) - gene_split)
+        )
         return Genome(new_genes)
 
 class OpenGLWidget:
@@ -128,7 +138,12 @@ class OpenGLWidget:
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glViewport(BORDER_MARGIN, BORDER_MARGIN, SCREEN_DIMENSIONS[0] - 2 * BORDER_MARGIN, SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN)
+        glViewport(
+            BORDER_MARGIN,
+            BORDER_MARGIN,
+            SCREEN_DIMENSIONS[0] - 2 * BORDER_MARGIN,
+            SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN
+        )
 
         for gene in self.evolution.population[0].genome.genes:
             self.draw_node(gene.source_pos, gene.activity)
