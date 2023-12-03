@@ -76,6 +76,7 @@ jobs:
 
       - name: Package as Installer
         run: makensis .github/workflows/install.nsi
+        working-directory: ${{ github.workspace }}
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
