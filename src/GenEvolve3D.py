@@ -1,6 +1,7 @@
 import random
 import copy
 import threading
+import time
 import tkinter as tk
 import pygame
 from pygame.locals import *
@@ -12,6 +13,7 @@ from OpenGL.GLU import *
 SCREEN_DIMENSIONS = (800, 600)
 PERSPECTIVE_SETTINGS = (45, 1, 0.1, 50.0)
 TRANSLATION_SETTINGS = (0, 0, -5)
+BORDER_MARGIN = 50  # Margin for the border
 
 # Evolutionary Algorithm Classes
 class Gene:
@@ -25,7 +27,8 @@ class Gene:
 
     @staticmethod
     def random_position():
-        return (random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1))
+        # Adjust coordinates to fit within the bordered area
+        return (random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8))
 
     def mutate(self):
         self.weight += random.uniform(-0.1, 0.1)
@@ -96,10 +99,11 @@ class Evolution:
         gene_split = len(genome1.genes) // 2
         new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
-        
-        # OpenGL-based Visualization
+
+# OpenGL-based Visualization
 class OpenGLWidget:
     """ Handles OpenGL visualization for the gene network. """
+
     def __init__(self, evolution):
         self.evolution = evolution
         self.continue_running = True
@@ -126,10 +130,15 @@ class OpenGLWidget:
 
             self.draw_gene_network()
             pygame.display.flip()
-            time.sleep(0.1)
+            time.sleep(0.5)  # Slower frame rate
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        # Set viewport with border
+        glViewport(BORDER_MARGIN, BORDER_MARGIN, SCREEN_DIMENSIONS[0] - 2 * BORDER_MARGIN, SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN)
+
+        glLineWidth(2)  # Thicker lines for better visibility
         glBegin(GL_LINES)
         for gene in self.evolution.population[0].genome.genes:
             glColor3f(*self.get_color_for_activity(gene.activity))
@@ -143,8 +152,8 @@ class OpenGLWidget:
     def stop(self):
         self.continue_running = False
         pygame.quit()
-        
-        # Tkinter-based GUI
+
+# Tkinter-based GUI
 class EvolutionGUI:
     """ Tkinter GUI for controlling the evolutionary simulation. """
     def __init__(self, evolution, opengl_widget):
