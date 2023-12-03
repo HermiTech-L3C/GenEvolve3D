@@ -1,4 +1,4 @@
-mayavi==4.8.0
+numpy==1.22.3
 pyface==7.2.1
 traits==6.3.0
-numpy==1.22.3
+mayavi==4.8.0
