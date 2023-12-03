@@ -58,10 +58,11 @@ jobs:
       - name: Package as Installer
         run: makensis installer.nsi
         shell: cmd
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/GenEvolve3D/dist
 
       - name: Upload Installer
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D/dist/GenEvolve3D-Setup.exe
+
