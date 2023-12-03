@@ -15,6 +15,9 @@ jobs:
       PYTHON_VERSION: '3.11'
 
     steps:
+      - name: Clear Workspace
+        run: rm -rf ${{ github.workspace }}/*
+
       - name: Checkout Code
         uses: actions/checkout@v2
 
@@ -23,10 +26,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Create Virtual Environment
+        run: python -m venv venv
+
+      - name: Activate Virtual Environment
+        run: |
+          source venv/bin/activate  # Replace with the appropriate activation command for Windows if needed
+          python -m pip install --upgrade pip
+
       - name: Install Dependencies
         working-directory: ${{ github.workspace }}
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt  # Assuming you have a requirements.txt file
 
       - name: Build Executable
@@ -52,4 +62,3 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D/dist/GenEvolve3D.exe
-
