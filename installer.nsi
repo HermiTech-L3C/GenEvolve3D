@@ -2,7 +2,7 @@
 !include "MUI2.nsh"
 
 ; Installer configuration
-Name "GENrevolve3D"
+Name "GenEvolve3D"
 OutFile "GenEvolve3D-Setup.exe"
 InstallDir "$PROGRAMFILES\GENrevolve3D"
 ShowInstDetails show
