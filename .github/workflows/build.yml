@@ -56,9 +56,10 @@ jobs:
         shell: pwsh
 
       - name: Package as Installer
-        run: makensis installer.nsi
+        run: makensis .github/workflows/installer.nsi
         shell: cmd
-        working-directory: ${{ github.workspace }}/GenEvolve3D/dist
+        working-directory: ${{ github.workspace }}
+
 
       - name: Upload Installer
         uses: actions/upload-artifact@v2
