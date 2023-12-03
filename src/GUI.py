@@ -1,15 +1,12 @@
-# GUI.py
 import random
 import copy
 import tkinter as tk
-import pygame
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-import time
+from mayavi import mlab
+from traits.api import HasTraits, Instance
+from traitsui.api import View, Item
+from mayavi.core.ui.api import MlabSceneModel, SceneEditor
 
-# Constants for OpenGL
+# Constants for Mayavi visualization
 SCREEN_DIMENSIONS = (800, 600)
 PERSPECTIVE_SETTINGS = (45, 1, 0.1, 50.0)
 TRANSLATION_SETTINGS = (0, 0, -5)
@@ -101,131 +98,74 @@ class Evolution:
         )
         return Genome(new_genes)
 
-class OpenGLWidget:
+class EvolutionGUI(HasTraits):
+    evolution = Instance(Evolution)
+    scene = Instance(MlabSceneModel, ())
+
     def __init__(self, evolution):
-        self.evolution = evolution
-        self.continue_running = False
-
-    def init_gl(self):
-        pygame.init()
-        pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
-        gluPerspective(*PERSPECTIVE_SETTINGS)
-        glTranslatef(*TRANSLATION_SETTINGS)
-
-    def run_evolution(self):
-        self.init_gl()
-        self.continue_running = True
-        while self.continue_running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.continue_running = False
-
-            if self.evolution.population:
-                self.evolution.run_generation()
-
-            self.draw_gene_network()
-            pygame.display.flip()
-            time.sleep(0.1)
-
-        pygame.quit()
-
-    def draw_gene_network(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glViewport(
-            BORDER_MARGIN,
-            BORDER_MARGIN,
-            SCREEN_DIMENSIONS[0] - 2 * BORDER_MARGIN,
-            SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN
-        )
-
-        glPointSize(5)
-        glBegin(GL_POINTS)
-        for gene in self.evolution.population[0].genome.genes:
-            glColor3f(*self.get_color_for_activity(gene.activity))
-            glVertex3fv(gene.source_pos)
-            glVertex3fv(gene.sink_pos)
-        glEnd()
-
-        glColor3f(1, 1, 1)
-        glBegin(GL_LINES)
-        for gene in self.evolution.population[0].genome.genes:
-            glVertex3fv(gene.source_pos)
-            glVertex3fv(gene.sink_pos)
-        glEnd()
-
-    def draw_node(self, position, activity):
-        # Simplified node representation
-        glPushMatrix()
-        glTranslate(*position)
-        glColor3f(*self.get_color_for_activity(activity))
-        glPointSize(activity * 5)
-        glBegin(GL_POINTS)
-        glVertex3f(0, 0, 0)
-        glEnd()
-        glPopMatrix()
-
-    def draw_connection(self, source_pos, sink_pos):
-        # Simplified connection representation
-        glColor3f(1, 1, 1)
-        glBegin(GL_LINES)
-        glVertex3fv(source_pos)
-        glVertex3fv(sink_pos)
-        glEnd()
-
-    def get_color_for_activity(self, activity):
-        r = min(activity, 1)
-        g = 1 - min(activity, 1)
-        b = activity / 2
-        return r, g, b
-
-class EvolutionGUI:
-    def __init__(self, evolution):
-        self.evolution = evolution
-        self.opengl_widget = OpenGLWidget(evolution)
-        self.root = tk.Tk()
-        self.root.title("Evolution Simulation")
+        super().__init__(evolution=evolution)
         self.create_widgets()
-        self.opengl_thread = None
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def create_widgets(self):
-        self.start_button = tk.Button(self.root, text="Start Evolution", command=self.start_evolution)
+        self.start_button = tk.Button(text="Start Evolution", command=self.start_evolution)
         self.start_button.pack()
 
-        self.stop_button = tk.Button(self.root, text="Stop Evolution", command=self.stop_evolution, state=tk.DISABLED)
+        self.stop_button = tk.Button(text="Stop Evolution", command=self.stop_evolution, state=tk.DISABLED)
         self.stop_button.pack()
 
-        self.mutation_scale = tk.Scale(self.root, from_=0, to=0.2, resolution=0.01, orient=tk.HORIZONTAL, label="Mutation Rate")
+        self.mutation_scale = tk.Scale(from_=0, to=0.2, resolution=0.01, orient=tk.HORIZONTAL, label="Mutation Rate")
         self.mutation_scale.set(self.evolution.mutation_rate)
         self.mutation_scale.pack()
 
-        self.status_label = tk.Label(self.root, text="Generation: 0\nAverage Fitness: 0.0")
+        self.status_label = tk.Label(text="Generation: 0\nAverage Fitness: 0.0")
         self.status_label.pack()
+
+        # Create Mayavi scene editor
+        self.view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene), height=500, width=600, show_label=False))
 
     def start_evolution(self):
         self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        self.opengl_thread = threading.Thread(target=self.opengl_widget.run_evolution)
-        self.opengl_thread.start()
         self.update_status()
 
     def stop_evolution(self):
-        self.opengl_widget.continue_running = False
-        if self.opengl_thread and self.opengl_thread.is_alive():
-            self.opengl_thread.join()
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
     def update_status(self):
-        if self.opengl_widget.continue_running:
+        if self.evolution.generation < 100:  # Adjust the number of generations to visualize
+            self.evolution.run_generation()
+            self.scene.mlab.clf()
+            self.draw_gene_network()
             gen, avg_fit = self.evolution.generation, self.evolution.average_fitness
             self.status_label.config(text=f"Generation: {gen}\nAverage Fitness: {avg_fit:.2f}")
-            self.root.after(500, self.update_status)
+            self.scene.mlab.view(azimuth=0, elevation=90)
+            self.scene.mlab.draw()
+            self.scene.mlab.savefig(f'generation_{gen}.png')
+            self.scene.mlab.show()
+            self.scene.mlab.save_camera('camera.npy')
+            self.evolution.generation += 1
 
-    def on_close(self):
-        self.stop_evolution()
-        self.root.destroy()
+    def draw_gene_network(self):
+        for gene in self.evolution.population[0].genome.genes:
+            self.draw_node(gene.source_pos, gene.activity)
+            self.draw_node(gene.sink_pos, gene.activity)
+            self.draw_connection(gene.source_pos, gene.sink_pos)
+
+    def draw_node(self, position, activity):
+        mlab.points3d(position[0], position[1], position[2], activity, scale_factor=0.05 * activity, color=(1, 0, 0))
+
+    def draw_connection(self, source_pos, sink_pos):
+        x = [source_pos[0], sink_pos[0]]
+        y = [source_pos[1], sink_pos[1]]
+        z = [source_pos[2], sink_pos[2]]
+        mlab.plot3d(x, y, z, color=(0, 0, 1), tube_radius=0.01)
 
     def run(self):
-        self.root.mainloop()
+        self.edit_traits(view=self.view)
+
+if __name__ == '__main__':
+    evolution = Evolution(population_size=100)
+    gui = EvolutionGUI(evolution)
+    gui.configure_traits()
