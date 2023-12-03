@@ -46,8 +46,9 @@ jobs:
         run: choco install nsis -y
 
       - name: Copy Executable
-        run: cp ./dist/GenEvolve3D.exe ./GenEvolve3D/dist/
+        run: cp ./dist/GenEvolve3D.exe ./GenEvolve3D/dist/GenEvolve3D.exe
         shell: pwsh
+
 
       - name: Package as Installer
         run: makensis installer.nsi
