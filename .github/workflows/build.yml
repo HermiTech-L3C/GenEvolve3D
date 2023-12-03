@@ -50,9 +50,8 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
-      - name: Prepare NSIS Script
-        working-directory: ${{ github.workspace }}
-        run: cp GenEvolve3D/installer.nsi .  # Copy from GenEvolve3D directory
+      - name: Copy NSIS Script
+        run: cp GenEvolve3D/installer.nsi .
 
       - name: Package as Installer
         working-directory: ${{ github.workspace }}
@@ -64,3 +63,4 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D/dist/GenEvolve3D.exe
+
