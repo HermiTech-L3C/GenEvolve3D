@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Clear Workspace
-        run: Remove-Item -Recurse -Force .\* -Exclude .git, .github
+        run: Remove-Item -Recurse -Force * -Exclude .git, .github
         shell: pwsh
 
       - name: Checkout Code
@@ -30,37 +30,32 @@ jobs:
       - name: Create Virtual Environment
         run: python -m venv venv
 
-      - name: Activate Virtual Environment
-        run: . .\venv\Scripts\Activate
-
       - name: Upgrade Pip
         run: python -m pip install --upgrade pip
 
       - name: Install Dependencies
+        run: pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
-        run: |
-          pip install -r requirements.txt
 
       - name: Build Executable
-        working-directory: ${{ github.workspace }}
-        run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
         shell: cmd
+        working-directory: ${{ github.workspace }}
 
       - name: Install NSIS
         run: choco install nsis -y
 
-        env:
-          PYTHON_VERSION: 3.11
-          pythonLocation: C:\hostedtoolcache\windows\Python\3.11.6\x64
+      - name: Copy Executable
+        run: cp ./dist/GenEvolve3D.exe ./GenEvolve3D/dist/
+        shell: pwsh
 
       - name: Package as Installer
-        working-directory: ${{ github.workspace }}
         run: makensis installer.nsi
         shell: cmd
+        working-directory: ${{ github.workspace }}
 
       - name: Upload Installer
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: ./GenEvolve3D/dist/GenEvolve3D-Setup.exe  # Update the path accordingly
+          path: ./GenEvolve3D/dist/GenEvolve3D-Setup.exe
