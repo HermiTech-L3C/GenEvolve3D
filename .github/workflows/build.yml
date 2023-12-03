@@ -37,7 +37,6 @@ jobs:
 
       - name: Package as Installer
         run: |
-          # Ensure the installer script is in the correct directory
           cp ./installer.nsi ${{ github.workspace }}
           makensis ${{ github.workspace }}\installer.nsi
         shell: pwsh
@@ -47,3 +46,4 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D-Setup.exe
+
