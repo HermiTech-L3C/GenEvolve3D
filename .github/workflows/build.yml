@@ -45,10 +45,15 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
+      - name: Create Directories
+        run: |
+          mkdir ./GenEvolve3D
+          mkdir ./GenEvolve3D/dist
+        shell: pwsh
+
       - name: Copy Executable
         run: cp ./dist/GenEvolve3D.exe ./GenEvolve3D/dist/GenEvolve3D.exe
         shell: pwsh
-
 
       - name: Package as Installer
         run: makensis installer.nsi
