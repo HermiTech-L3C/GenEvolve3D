@@ -1,24 +1,27 @@
 import random
-import numpy as np
+import copy
 import threading
 import tkinter as tk
-import copy
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-# Evolution logic classes
+# Constants
+SCREEN_DIMENSIONS = (800, 600)
+PERSPECTIVE_SETTINGS = (45, 1, 0.1, 50.0)
+TRANSLATION_SETTINGS = (0, 0, -5)
+
+# Classes for Evolution Logic
 class Gene:
-    def __init__(self, source_type, source_num, sink_type, sink_num, weight, source_pos=None, sink_pos=None):
-        self.source_type = source_type
-        self.source_num = source_num
-        self.sink_type = sink_type
-        self.sink_num = sink_num
+    """ Represents a gene with mutation capability and activity level. """
+    def __init__(self, source_type, source_num, sink_type, sink_num, weight):
+        self.source_type, self.source_num = source_type, source_num
+        self.sink_type, self.sink_num = sink_type, sink_num
         self.weight = weight
-        self.source_pos = source_pos if source_pos else self.random_position()
-        self.sink_pos = sink_pos if sink_pos else self.random_position()
+        self.source_pos, self.sink_pos = self.random_position(), self.random_position()
+        self.activity = 0
 
     @staticmethod
     def random_position():
@@ -26,19 +29,24 @@ class Gene:
 
     def mutate(self):
         self.weight += random.uniform(-0.1, 0.1)
+        self.update_activity()
+
+    def update_activity(self):
+        self.activity = abs(self.weight)
 
 class Genome:
+    """ Represents a collection of genes (the genome). """
     def __init__(self, genes=None):
         self.genes = genes if genes else []
 
-    def add_connection(self, source_type, source_num, sink_type, sink_num, weight, source_pos=None, sink_pos=None):
-        gene = Gene(source_type, source_num, sink_type, sink_num, weight, source_pos, sink_pos)
-        self.genes.append(gene)
+    def add_connection(self, source_type, source_num, sink_type, sink_num, weight):
+        self.genes.append(Gene(source_type, source_num, sink_type, sink_num, weight))
 
     def deep_copy(self):
         return copy.deepcopy(self)
 
 class Individual:
+    """ Represents an individual with a genome and a fitness score. """
     def __init__(self, genome):
         self.genome = genome
         self.fitness = 0
@@ -47,12 +55,11 @@ class Individual:
         self.fitness = random.uniform(0, 10)
 
     def mutate(self):
-        if not self.genome.genes:
-            return
-        gene_to_mutate = random.choice(self.genome.genes)
-        gene_to_mutate.mutate()
+        if self.genome.genes:
+            random.choice(self.genome.genes).mutate()
 
 class Evolution:
+    """ Manages the evolutionary process for a population of individuals. """
     def __init__(self, population_size, mutation_rate=0.1):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -61,41 +68,38 @@ class Evolution:
         self.average_fitness = 0
 
     def random_genome(self):
-        genes = [Gene('type1', 0, 'type2', 1, random.uniform(-1, 1)) for _ in range(random.randint(1, 3))]
-        return Genome(genes)
+        return Genome([Gene('type1', 0, 'type2', 1, random.uniform(-1, 1)) for _ in range(random.randint(1, 3))])
 
     def run_generation(self):
-        for individual in self.population:
-            individual.evaluate_fitness()
+        for ind in self.population:
+            ind.evaluate_fitness()
 
-        self.average_fitness = sum(ind.fitness for ind in self.population) / len(self.population)
+        self.update_population()
 
-        self.population.sort(key=lambda x: x.fitness, reverse=True)
-        self.population = self.population[:self.population_size // 2]
-
-        next_generation = self.create_next_generation()
-        self.population = next_generation
+    def update_population(self):
+        self.population.sort(key=lambda ind: ind.fitness, reverse=True)
+        self.population = self.population[:self.population_size // 2] + self.create_next_generation()
         self.generation += 1
+        self.average_fitness = sum(ind.fitness for ind in self.population) / len(self.population)
 
     def create_next_generation(self):
         next_generation = []
-        while len(next_generation) < self.population_size:
+        while len(next_generation) < self.population_size // 2:
             parent1, parent2 = random.sample(self.population, 2)
-            child_genome = self.crossover(parent1.genome, parent2.genome)
-            child = Individual(child_genome)
+            child = Individual(self.crossover(parent1.genome, parent2.genome))
             if random.random() < self.mutation_rate:
                 child.mutate()
             next_generation.append(child)
         return next_generation
 
     def crossover(self, genome1, genome2):
-        new_genes = random.sample(genome1.genes, len(genome1.genes) // 2) + random.sample(genome2.genes, len(genome2.genes) // 2)
-        if not new_genes:
-            new_genes.append(random.choice(genome1.genes + genome2.genes))
+        gene_split = len(genome1.genes) // 2
+        new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
-
-# OpenGL-based visualization class
+        
+        # OpenGL-based Visualization
 class OpenGLWidget:
+    """ Handles OpenGL visualization for the gene network. """
     def __init__(self, evolution):
         self.evolution = evolution
         self.continue_running = True
@@ -103,11 +107,11 @@ class OpenGLWidget:
 
     def init_gl(self):
         pygame.init()
-        pygame.display.set_mode((800, 800), DOUBLEBUF | OPENGL)
-        gluPerspective(45, 1, 0.1, 50.0)
-        glTranslatef(0, 0, -5)
+        pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
+        gluPerspective(*PERSPECTIVE_SETTINGS)
+        glTranslatef(*TRANSLATION_SETTINGS)
         self.initialized = True
-        
+
     def run_evolution(self):
         if not self.initialized:
             self.init_gl()
@@ -126,18 +130,21 @@ class OpenGLWidget:
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glBegin(GL_LINES)
-        if self.evolution.population:
-            for gene in self.evolution.population[0].genome.genes:
-                glColor3f(1, 0, 0)
-                glVertex3fv(gene.source_pos)
-                glVertex3fv(gene.sink_pos)
+        for gene in self.evolution.population[0].genome.genes:
+            glColor3f(*self.get_color_for_activity(gene.activity))
+            glVertex3fv(gene.source_pos)
+            glVertex3fv(gene.sink_pos)
         glEnd()
+
+    def get_color_for_activity(self, activity):
+        return min(activity, 1), 1 - min(activity, 1), 0  # Red to green gradient
 
     def stop(self):
         self.continue_running = False
 
-# Tkinter-based GUI class
+# Tkinter-based GUI
 class EvolutionGUI:
+    """ Tkinter GUI for controlling the evolutionary simulation. """
     def __init__(self, evolution, opengl_widget):
         self.evolution = evolution
         self.opengl_widget = opengl_widget
@@ -159,31 +166,28 @@ class EvolutionGUI:
         self.status_label = tk.Label(self.root, text="Generation: 0\nAverage Fitness: 0.0")
         self.status_label.pack()
 
-    def update_evolution_parameters(self):
-        self.evolution.mutation_rate = self.mutation_scale.get()
-
     def start_evolution(self):
-        self.update_evolution_parameters()
+        self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        self.evolution_thread = threading.Thread(target=self.opengl_widget.run_evolution)
-        self.evolution_thread.start()
+        threading.Thread(target=self.opengl_widget.run_evolution).start()
         self.update_status()
 
     def stop_evolution(self):
         self.opengl_widget.stop()
-        self.evolution_thread.join()
-        self.stop_button.config(state=tk.DISABLED)
         self.start_button.config(state=tk.NORMAL)
+        self.stop_button.config(state=tk.DISABLED)
 
     def update_status(self):
         if self.opengl_widget.continue_running:
-            self.status_label.config(text=f"Generation: {self.evolution.generation}\nAverage Fitness: {self.evolution.average_fitness:.2f}")
+            gen, avg_fit = self.evolution.generation, self.evolution.average_fitness
+            self.status_label.config(text=f"Generation: {gen}\nAverage Fitness: {avg_fit:.2f}")
             self.root.after(500, self.update_status)
 
     def run(self):
         self.root.mainloop()
 
+# Main function
 def main():
     evolution = Evolution(population_size=100)
     opengl_widget = OpenGLWidget(evolution)
@@ -192,4 +196,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-        
