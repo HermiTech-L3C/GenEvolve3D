@@ -61,7 +61,8 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+          $pyinstaller_path = "${{ github.workspace }}/venv/Scripts/pyinstaller.exe"
+          & $pyinstaller_path --onefile --noconsole --paths src --name GenEvolve3D src/main.py
         shell: pwsh
         working-directory: ${{ github.workspace }}
 
