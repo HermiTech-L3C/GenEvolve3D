@@ -72,12 +72,11 @@ jobs:
           copy src/install.nsi .github/workflows/install.nsi
 
       - name: Package as Installer
-        run: |
-          makensis .github/workflows/install.nsi
-          if %errorlevel% neq 0 (
-            echo "Error: NSIS script compilation failed."
-            exit 1
-          )
+        run: makensis .github/workflows/install.nsi
+        if %errorlevel% neq 0 (
+          echo "Error: NSIS script compilation failed."
+          exit 1
+        )
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
