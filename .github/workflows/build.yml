@@ -50,15 +50,6 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
-      - name: Copy NSIS Script
-        run: |
-          if (Test-Path -Path D:\a\GenEvolve3D\GenEvolve3D\installer.nsi) {
-            Copy-Item -Path D:\a\GenEvolve3D\GenEvolve3D\installer.nsi -Destination ./installer.nsi
-          } else {
-            echo "Installer script not found."
-            exit 1
-          }
-        shell: pwsh
         env:
           PYTHON_VERSION: 3.11
           pythonLocation: C:\hostedtoolcache\windows\Python\3.11.6\x64
