@@ -15,7 +15,6 @@ PERSPECTIVE_SETTINGS = (45, 1, 0.1, 50.0)
 TRANSLATION_SETTINGS = (0, 0, -5)
 BORDER_MARGIN = 50  # Margin for the border
 
-# Evolutionary Algorithm Classes
 class Gene:
     def __init__(self, source_type, source_num, sink_type, sink_num, weight):
         self.source_type, self.source_num = source_type, source_num
@@ -94,7 +93,6 @@ class Evolution:
         new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
 
-# OpenGL-based Visualization
 class OpenGLWidget:
     def __init__(self, evolution):
         self.evolution = evolution
@@ -161,7 +159,6 @@ class OpenGLWidget:
         self.continue_running = False
         pygame.quit()
 
-# Tkinter-based GUI
 class EvolutionGUI:
     def __init__(self, evolution, opengl_widget):
         self.evolution = evolution
@@ -205,7 +202,6 @@ class EvolutionGUI:
     def run(self):
         self.root.mainloop()
 
-# Main function
 def main():
     evolution = Evolution(population_size=100)
     opengl_widget = OpenGLWidget(evolution)
