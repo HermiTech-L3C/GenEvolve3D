@@ -125,9 +125,9 @@ class OpenGLWidget:
 
             self.draw_gene_network()
             pygame.display.flip()
-            time.sleep(0.5)
+            time.sleep(0.1)  # Adjusted delay for smoother updates
 
-        pygame.quit()
+        pygame.quit()  # Ensure Pygame is properly quit
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
