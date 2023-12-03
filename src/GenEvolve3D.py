@@ -217,7 +217,7 @@ class EvolutionGUI:
 
 def main():
     evolution = Evolution(population_size=100)
-    gui = EvolutionGUI(evolution, OpenGLWidget(evolution))
+    gui = EvolutionGUI(evolution)
     gui.run()
 
 if __name__ == '__main__':
