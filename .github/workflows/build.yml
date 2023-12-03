@@ -46,7 +46,7 @@ jobs:
             exit 1
           )
           pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
-          if %errorlevel% neq 0 (
+          if ERRORLEVEL 1 (
             echo "Error: PyInstaller failed."
             exit 1
           )
@@ -79,4 +79,3 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./dist/GenEvolve3D.exe
-
