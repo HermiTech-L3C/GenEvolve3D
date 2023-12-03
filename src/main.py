@@ -1,8 +1,11 @@
 # main.py
 import threading
+import pygame  # Import pygame at the top
 from GUI import EvolutionGUI, Evolution
 
 def main():
+    pygame.init()  # Initialize pygame
+
     evolution = Evolution(population_size=100)
     gui = EvolutionGUI(evolution)
 
@@ -16,6 +19,7 @@ def main():
     # Wait for Tkinter thread to finish
     tkinter_thread.join()
 
+    pygame.quit()  # Properly close pygame
+
 if __name__ == '__main__':
     main()
-pygame.quit()
