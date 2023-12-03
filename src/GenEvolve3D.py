@@ -17,7 +17,6 @@ BORDER_MARGIN = 50  # Margin for the border
 
 # Evolutionary Algorithm Classes
 class Gene:
-    """ Represents a gene with mutation capability and activity level. """
     def __init__(self, source_type, source_num, sink_type, sink_num, weight):
         self.source_type, self.source_num = source_type, source_num
         self.sink_type, self.sink_num = sink_type, sink_num
@@ -27,7 +26,6 @@ class Gene:
 
     @staticmethod
     def random_position():
-        # Adjust coordinates to fit within the bordered area
         return (random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8))
 
     def mutate(self):
@@ -38,7 +36,6 @@ class Gene:
         self.activity = abs(self.weight)
 
 class Genome:
-    """ Represents a collection of genes (the genome). """
     def __init__(self, genes=None):
         self.genes = genes if genes else []
 
@@ -49,7 +46,6 @@ class Genome:
         return copy.deepcopy(self)
 
 class Individual:
-    """ Represents an individual with a genome and a fitness score. """
     def __init__(self, genome):
         self.genome = genome
         self.fitness = 0
@@ -62,7 +58,6 @@ class Individual:
             random.choice(self.genome.genes).mutate()
 
 class Evolution:
-    """ Manages the evolutionary process for a population of individuals. """
     def __init__(self, population_size, mutation_rate=0.1):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -76,7 +71,6 @@ class Evolution:
     def run_generation(self):
         for ind in self.population:
             ind.evaluate_fitness()
-
         self.update_population()
 
     def update_population(self):
@@ -102,8 +96,6 @@ class Evolution:
 
 # OpenGL-based Visualization
 class OpenGLWidget:
-    """ Handles OpenGL visualization for the gene network. """
-
     def __init__(self, evolution):
         self.evolution = evolution
         self.continue_running = True
@@ -134,20 +126,32 @@ class OpenGLWidget:
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-        # Set viewport with border
         glViewport(BORDER_MARGIN, BORDER_MARGIN, SCREEN_DIMENSIONS[0] - 2 * BORDER_MARGIN, SCREEN_DIMENSIONS[1] - 2 * BORDER_MARGIN)
 
-        glLineWidth(2)  # Thicker lines for better visibility
-        glBegin(GL_LINES)
         for gene in self.evolution.population[0].genome.genes:
-            glColor3f(*self.get_color_for_activity(gene.activity))
-            glVertex3fv(gene.source_pos)
-            glVertex3fv(gene.sink_pos)
+            self.draw_node(gene.source_pos, gene.activity)
+            self.draw_node(gene.sink_pos, gene.activity)
+            self.draw_connection(gene.source_pos, gene.sink_pos)
+
+    def draw_node(self, position, activity):
+        glPushMatrix()
+        glTranslate(*position)
+        glColor3f(*self.get_color_for_activity(activity))
+        glutSolidSphere(activity * 0.05, 20, 20)  # Node size based on activity
+        glPopMatrix()
+
+    def draw_connection(self, source_pos, sink_pos):
+        glColor3f(1, 1, 1)  # White color for connections
+        glBegin(GL_LINES)
+        glVertex3fv(source_pos)
+        glVertex3fv(sink_pos)
         glEnd()
 
     def get_color_for_activity(self, activity):
-        return min(activity, 1), 1 - min(activity, 1), 0  # Red to green gradient
+        r = min(activity, 1)
+        g = 1 - min(activity, 1)
+        b = activity / 2  # Example color logic
+        return r, g, b
 
     def stop(self):
         self.continue_running = False
@@ -155,7 +159,6 @@ class OpenGLWidget:
 
 # Tkinter-based GUI
 class EvolutionGUI:
-    """ Tkinter GUI for controlling the evolutionary simulation. """
     def __init__(self, evolution, opengl_widget):
         self.evolution = evolution
         self.opengl_widget = opengl_widget
