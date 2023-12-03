@@ -106,7 +106,7 @@ class Evolution:
 class OpenGLWidget:
     def __init__(self, evolution):
         self.evolution = evolution
-        self.continue_running = threading.Event()
+        self.continue_running = False
         self.initialized = False
 
     def init_gl(self):
@@ -119,11 +119,11 @@ class OpenGLWidget:
 
     def run_evolution(self):
         self.init_gl()
-        self.continue_running.set()
-        while self.continue_running.is_set():
+        self.continue_running = True
+        while self.continue_running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.continue_running.clear()
+                    self.continue_running = False
 
             if self.evolution.population:
                 self.evolution.run_generation()
@@ -176,6 +176,7 @@ class EvolutionGUI:
         self.root.title("Evolution Simulation")
         self.create_widgets()
         self.opengl_thread = None
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def create_widgets(self):
         self.start_button = tk.Button(self.root, text="Start Evolution", command=self.start_evolution)
@@ -200,20 +201,27 @@ class EvolutionGUI:
         self.update_status()
 
     def stop_evolution(self):
-        self.opengl_widget.continue_running.clear()
-        if self.opengl_thread:
+        self.opengl_widget.continue_running = False
+        if self.opengl_thread and self.opengl_thread.is_alive():
             self.opengl_thread.join()
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
     def update_status(self):
-        if self.opengl_widget.continue_running.is_set():
+        if self.opengl_widget.continue_running:
             gen, avg_fit = self.evolution.generation, self.evolution.average_fitness
             self.status_label.config(text=f"Generation: {gen}\nAverage Fitness: {avg_fit:.2f}")
             self.root.after(500, self.update_status)
 
+    def on_close(self):
+        self.stop_evolution()
+        self.root.destroy()
+
     def run(self):
+        self.opengl_thread = threading.Thread(target=self.opengl_widget.run_evolution)
+        self.opengl_thread.start()
         self.root.mainloop()
+        self.opengl_thread.join()  # Wait for OpenGL thread to finish
 
 def main():
     evolution = Evolution(population_size=100)
