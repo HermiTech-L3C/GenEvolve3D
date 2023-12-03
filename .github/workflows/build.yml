@@ -37,7 +37,9 @@ jobs:
 
       - name: Package as Installer
         run: |
-          cp ./installer.nsi ${{ github.workspace }}
+          # Copy the installer script from the GENrevolve3D directory to the GitHub workspace
+          cp ./GENrevolve3D/installer.nsi ${{ github.workspace }}
+          # Run the NSIS script to create the installer
           makensis ${{ github.workspace }}\installer.nsi
         shell: pwsh
 
@@ -46,4 +48,3 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: ./GenEvolve3D-Setup.exe
-
