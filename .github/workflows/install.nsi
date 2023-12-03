@@ -3,7 +3,7 @@
 
 ; Installer configuration
 Name "GENrevolve3D"
-OutFile "GENrevolve3D-Setup.exe"  ; This is the name of the installer
+OutFile "GenEvolve3D-Setup.exe"
 InstallDir "$PROGRAMFILES\GENrevolve3D"
 ShowInstDetails show
 ShowUnInstDetails show
@@ -17,7 +17,7 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-   File "..\..\dist\GenEvolve3D.exe"
+    File "./dist/GenEvolve3D.exe"
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -30,4 +30,3 @@ Section "Uninstall"
     RMDir "$SMPROGRAMS\GENrevolve3D"
     RMDir "$INSTDIR"
 SectionEnd
-
