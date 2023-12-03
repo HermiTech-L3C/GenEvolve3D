@@ -105,15 +105,12 @@ class OpenGLWidget:
     def __init__(self, evolution):
         self.evolution = evolution
         self.continue_running = False
-        self.initialized = False
 
     def init_gl(self):
-        if not self.initialized:
-            pygame.init()
-            pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
-            gluPerspective(*PERSPECTIVE_SETTINGS)
-            glTranslatef(*TRANSLATION_SETTINGS)
-            self.initialized = True
+        pygame.init()
+        pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
+        gluPerspective(*PERSPECTIVE_SETTINGS)
+        glTranslatef(*TRANSLATION_SETTINGS)
 
     def run_evolution(self):
         self.init_gl()
@@ -167,9 +164,9 @@ class OpenGLWidget:
         return r, g, b
 
 class EvolutionGUI:
-    def __init__(self, evolution, opengl_widget):
+    def __init__(self, evolution):
         self.evolution = evolution
-        self.opengl_widget = opengl_widget
+        self.opengl_widget = OpenGLWidget(evolution)
         self.root = tk.Tk()
         self.root.title("Evolution Simulation")
         self.create_widgets()
@@ -216,15 +213,11 @@ class EvolutionGUI:
         self.root.destroy()
 
     def run(self):
-        self.opengl_thread = threading.Thread(target=self.opengl_widget.run_evolution)
-        self.opengl_thread.start()
         self.root.mainloop()
-        self.opengl_thread.join()  # Wait for OpenGL thread to finish
 
 def main():
     evolution = Evolution(population_size=100)
-    opengl_widget = OpenGLWidget(evolution)
-    gui = EvolutionGUI(evolution, opengl_widget)
+    gui = EvolutionGUI(evolution, OpenGLWidget(evolution))
     gui.run()
 
 if __name__ == '__main__':
