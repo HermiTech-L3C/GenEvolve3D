@@ -7,6 +7,7 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import time
 
 # Constants for OpenGL
 SCREEN_DIMENSIONS = (800, 600)
@@ -105,11 +106,11 @@ class Evolution:
 class OpenGLWidget:
     def __init__(self, evolution):
         self.evolution = evolution
-        self.continue_running = False
+        self.continue_running = threading.Event()
         self.initialized = False
 
     def init_gl(self):
-        if not self.initialized:  # Check if not initialized already
+        if not self.initialized:
             pygame.init()
             pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
             gluPerspective(*PERSPECTIVE_SETTINGS)
@@ -117,26 +118,21 @@ class OpenGLWidget:
             self.initialized = True
 
     def run_evolution(self):
-        self.init_gl()  # Initialize OpenGL only once
+        self.init_gl()
+        self.continue_running.set()
+        while self.continue_running.is_set():
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.continue_running.clear()
 
-        try:
-            self.continue_running = True  # Start the evolution loop
-            while self.continue_running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.continue_running = False  # Stop the loop gracefully
+            if self.evolution.population:
+                self.evolution.run_generation()
 
-                if self.evolution.population:
-                    self.evolution.run_generation()
+            self.draw_gene_network()
+            pygame.display.flip()
+            time.sleep(0.5)
 
-                self.draw_gene_network()
-                pygame.display.flip()
-                time.sleep(0.5)  # Slower frame rate
-        except Exception as e:
-            print("An error occurred in the OpenGL widget:", e)
-        finally:
-            if pygame.get_init():  # Check if pygame is initialized before quitting
-                pygame.quit()  # Close the pygame window
+        pygame.quit()
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -156,11 +152,11 @@ class OpenGLWidget:
         glPushMatrix()
         glTranslate(*position)
         glColor3f(*self.get_color_for_activity(activity))
-        glutSolidSphere(activity * 0.05, 20, 20)  # Node size based on activity
+        glutSolidSphere(activity * 0.05, 20, 20)
         glPopMatrix()
 
     def draw_connection(self, source_pos, sink_pos):
-        glColor3f(1, 1, 1)  # White color for connections
+        glColor3f(1, 1, 1)
         glBegin(GL_LINES)
         glVertex3fv(source_pos)
         glVertex3fv(sink_pos)
@@ -169,7 +165,7 @@ class OpenGLWidget:
     def get_color_for_activity(self, activity):
         r = min(activity, 1)
         g = 1 - min(activity, 1)
-        b = activity / 2  # Example color logic
+        b = activity / 2
         return r, g, b
 
 class EvolutionGUI:
@@ -179,6 +175,7 @@ class EvolutionGUI:
         self.root = tk.Tk()
         self.root.title("Evolution Simulation")
         self.create_widgets()
+        self.opengl_thread = None
 
     def create_widgets(self):
         self.start_button = tk.Button(self.root, text="Start Evolution", command=self.start_evolution)
@@ -198,16 +195,19 @@ class EvolutionGUI:
         self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()  # Set thread as daemon
+        self.opengl_thread = threading.Thread(target=self.opengl_widget.run_evolution)
+        self.opengl_thread.start()
         self.update_status()
 
     def stop_evolution(self):
-        self.opengl_widget.continue_running = False  # Stop the evolution loop
+        self.opengl_widget.continue_running.clear()
+        if self.opengl_thread:
+            self.opengl_thread.join()
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
 
     def update_status(self):
-        if self.opengl_widget.continue_running:
+        if self.opengl_widget.continue_running.is_set():
             gen, avg_fit = self.evolution.generation, self.evolution.average_fitness
             self.status_label.config(text=f"Generation: {gen}\nAverage Fitness: {avg_fit:.2f}")
             self.root.after(500, self.update_status)
