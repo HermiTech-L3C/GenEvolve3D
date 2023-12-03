@@ -107,7 +107,7 @@ class OpenGLWidget:
         self.continue_running = False
 
     def init_gl(self):
-        pygame.init()
+        pygame.init()  # Initialize Pygame here, but ensure it's not initialized multiple times.
         pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
         gluPerspective(*PERSPECTIVE_SETTINGS)
         glTranslatef(*TRANSLATION_SETTINGS)
@@ -116,6 +116,10 @@ class OpenGLWidget:
         self.init_gl()
         self.continue_running = True
         while self.continue_running:
+            for event in pygame.event.get():  # Handling Pygame events in the same loop
+                if event.type == pygame.QUIT:
+                    self.continue_running = False
+
             if self.evolution.population:
                 self.evolution.run_generation()
 
@@ -210,9 +214,3 @@ class EvolutionGUI:
 
     def run(self):
         self.root.mainloop()
-
-    def handle_pygame_events(self):
-        while self.opengl_widget.continue_running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.opengl_widget.continue_running = False
