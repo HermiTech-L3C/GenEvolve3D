@@ -116,10 +116,6 @@ class OpenGLWidget:
         self.init_gl()
         self.continue_running = True
         while self.continue_running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.continue_running = False
-
             if self.evolution.population:
                 self.evolution.run_generation()
 
@@ -215,10 +211,25 @@ class EvolutionGUI:
     def run(self):
         self.root.mainloop()
 
+def handle_pygame_events(opengl_widget):
+    while opengl_widget.continue_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                opengl_widget.continue_running = False
+
 def main():
     evolution = Evolution(population_size=100)
     gui = EvolutionGUI(evolution)
-    gui.run()
+
+    # Run the Tkinter main loop in a separate thread
+    tkinter_thread = threading.Thread(target=gui.run)
+    tkinter_thread.start()
+
+    # Main thread handles pygame events
+    handle_pygame_events(gui.opengl_widget)
+
+    # Wait for Tkinter thread to finish
+    tkinter_thread.join()
 
 if __name__ == '__main__':
     main()
