@@ -54,9 +54,6 @@ jobs:
           PYTHON_VERSION: 3.11
           pythonLocation: C:\hostedtoolcache\windows\Python\3.11.6\x64
 
-      - name: List contents of ./GenEvolve3D/dist/
-        run: dir ./GenEvolve3D/dist/  # Use 'ls' if you're using PowerShell
-
       - name: Package as Installer
         working-directory: ${{ github.workspace }}
         run: makensis installer.nsi
@@ -66,4 +63,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: ./GenEvolve3D/GenEvolve3D/dist/GenEvolve3D-Setup.exe  # Update the path accordingly
+          path: ./GenEvolve3D/dist/GenEvolve3D-Setup.exe  # Update the path accordingly
