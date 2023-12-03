@@ -7,7 +7,7 @@ def main():
     gui = EvolutionGUI(evolution)
 
     # Run the Tkinter main loop in a separate thread
-    tkinter_thread = threading.Thread(target=gui.run)
+    tkinter_thread = threading.Thread(target=gui.run, daemon=True)
     tkinter_thread.start()
 
     # Main thread handles pygame events
@@ -18,3 +18,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+pygame.quit()
