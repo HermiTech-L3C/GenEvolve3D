@@ -1,7 +1,6 @@
 import random
 import copy
 import threading
-import time
 import tkinter as tk
 import pygame
 from pygame.locals import *
