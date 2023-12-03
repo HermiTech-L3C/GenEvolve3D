@@ -31,15 +31,19 @@ jobs:
         run: python -m venv venv
 
       - name: Upgrade Pip
-        run: python -m pip install --upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel  # Ensure wheel is installed
+        shell: pwsh
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
 
       - name: Build Executable
-        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
-        shell: cmd
+        run: |
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        shell: pwsh
         working-directory: ${{ github.workspace }}
 
       - name: Copy Executable to NSIS Directory
@@ -52,6 +56,13 @@ jobs:
       - name: Package as Installer
         run: makensis .github/workflows/installer.nsi
         shell: cmd
+        working-directory: ${{ github.workspace }}
+
+      - name: Stage Application and Dependencies
+        run: |
+          mkdir staged_app
+          cp -r ./dist/* ./staged_app/
+          cp -r ./venv/Lib/site-packages/* ./staged_app/
         working-directory: ${{ github.workspace }}
 
       - name: Upload Installer
