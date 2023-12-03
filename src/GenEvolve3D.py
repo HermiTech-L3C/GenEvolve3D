@@ -112,17 +112,21 @@ class OpenGLWidget:
         if not self.initialized:
             self.init_gl()
 
-        while self.continue_running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.stop()
+        try:
+            while self.continue_running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.stop()
 
-            if self.evolution.population:
-                self.evolution.run_generation()
+                if self.evolution.population:
+                    self.evolution.run_generation()
 
-            self.draw_gene_network()
-            pygame.display.flip()
-            time.sleep(0.5)  # Slower frame rate
+                self.draw_gene_network()
+                pygame.display.flip()
+                time.sleep(0.5)  # Slower frame rate
+        except Exception as e:
+            print("An error occurred in the OpenGL widget:", e)
+            self.stop()
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -184,7 +188,7 @@ class EvolutionGUI:
         self.evolution.mutation_rate = self.mutation_scale.get()
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
-        threading.Thread(target=self.opengl_widget.run_evolution).start()
+        threading.Thread(target=self.opengl_widget.run_evolution, daemon=True).start()  # Set thread as daemon
         self.update_status()
 
     def stop_evolution(self):
