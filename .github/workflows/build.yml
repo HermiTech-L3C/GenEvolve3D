@@ -41,17 +41,26 @@ jobs:
         run: |
           pip install -r requirements.txt  # Assuming you have a requirements.txt file
 
+      - name: Find GenEvolve3D Files
+        id: find_files
+        run: |
+          $installerFile = Get-ChildItem -Recurse -Filter 'installer.nsi' | Select-Object -First 1 -ExpandProperty FullName
+          $pythonScript = Get-ChildItem -Recurse -Filter 'GenEvolve3D.py' | Select-Object -First 1 -ExpandProperty FullName
+          echo "::set-output name=installerFile::$installerFile"
+          echo "::set-output name=pythonScript::$pythonScript"
+        shell: pwsh
+
       - name: Build Executable
         working-directory: ${{ github.workspace }}
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/GenEvolve3D.py
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D ${{ steps.find_files.outputs.pythonScript }}
         shell: cmd
 
       - name: Install NSIS
         run: choco install nsis -y
 
       - name: Copy NSIS Script
-        run: cp ./GenEvolve3D/installer.nsi .
+        run: cp ${{ steps.find_files.outputs.installerFile }} .
 
       - name: Package as Installer
         working-directory: ${{ github.workspace }}
