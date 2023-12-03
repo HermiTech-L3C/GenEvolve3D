@@ -17,7 +17,7 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "..\dist\GenEvolve3D.exe"  ; Adjusted relative path to the built executable
+    File ".\dist\GenEvolve3D.exe"  ; Adjusted relative path to the built executable
     CreateDirectory "$SMPROGRAMS\GENrevolve3D"
     CreateShortCut "$SMPROGRAMS\GENrevolve3D\GENrevolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
