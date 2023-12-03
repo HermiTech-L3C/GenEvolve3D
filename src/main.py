@@ -1,6 +1,6 @@
 # main.py
 import threading
-import pygame  # Import pygame at the top
+import pygame
 from GUI import EvolutionGUI, Evolution
 
 def main():
@@ -12,9 +12,6 @@ def main():
     # Run the Tkinter main loop in a separate thread
     tkinter_thread = threading.Thread(target=gui.run, daemon=True)
     tkinter_thread.start()
-
-    # Main thread handles pygame events
-    gui.handle_pygame_events()
 
     # Wait for Tkinter thread to finish
     tkinter_thread.join()
