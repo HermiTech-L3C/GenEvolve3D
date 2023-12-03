@@ -34,10 +34,11 @@ jobs:
 
       - name: Install NSIS
         run: choco install nsis -y
-
+        
       - name: Package as Installer
-        run: makensis ${{ github.workspace }}/installer.nsi
+        run: makensis ${{ github.workspace }}\installer.nsi
         shell: pwsh
+
 
       - name: Upload Packaged Application
         uses: actions/upload-artifact@v2
