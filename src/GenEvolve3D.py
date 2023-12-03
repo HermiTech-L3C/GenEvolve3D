@@ -110,15 +110,15 @@ class OpenGLWidget:
         self.initialized = False
 
     def init_gl(self):
-        pygame.init()
-        pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
-        gluPerspective(*PERSPECTIVE_SETTINGS)
-        glTranslatef(*TRANSLATION_SETTINGS)
-        self.initialized = True
+        if not self.initialized:  # Check if not initialized already
+            pygame.init()
+            pygame.display.set_mode(SCREEN_DIMENSIONS, DOUBLEBUF | OPENGL)
+            gluPerspective(*PERSPECTIVE_SETTINGS)
+            glTranslatef(*TRANSLATION_SETTINGS)
+            self.initialized = True
 
     def run_evolution(self):
-        if not self.initialized:
-            self.init_gl()
+        self.init_gl()  # Initialize OpenGL only once
 
         try:
             self.continue_running = True  # Start the evolution loop
@@ -136,7 +136,8 @@ class OpenGLWidget:
         except Exception as e:
             print("An error occurred in the OpenGL widget:", e)
         finally:
-            pygame.quit()  # Close the pygame window
+            if pygame.get_init():  # Check if pygame is initialized before quitting
+                pygame.quit()  # Close the pygame window
 
     def draw_gene_network(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
