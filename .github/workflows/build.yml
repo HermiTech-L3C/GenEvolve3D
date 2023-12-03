@@ -45,7 +45,7 @@ jobs:
 
       - name: Install PyInstaller
         run: |
-          $python_exe = Join-Path -Path $env:USERPROFILE -ChildPath "venv\Scripts\python.exe"
+          $python_exe = "${{ github.workspace }}/venv/Scripts/python.exe"
           & $python_exe -m pip install pyinstaller
         shell: pwsh
 
@@ -61,8 +61,7 @@ jobs:
 
       - name: Build Executable
         run: |
-          $pyinstaller_exe = Join-Path -Path $env:USERPROFILE -ChildPath "venv\Scripts\pyinstaller.exe"
-          & $pyinstaller_exe --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
         shell: pwsh
         working-directory: ${{ github.workspace }}
 
