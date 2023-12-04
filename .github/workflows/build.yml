@@ -13,8 +13,7 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.9'
-      # PYTHON_PATH is updated to point to the root of the GitHub workspace
-      PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D
+      PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
 
@@ -41,11 +40,15 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          # Updated the paths in the PyInstaller command
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH\src --name $env:EXECUTABLE_NAME $env:PYTHON_PATH\src\main.py `
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME $env:PYTHON_PATH\main.py `
           --hidden-import traitsui --hidden-import pyface.ui.null `
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
+        shell: pwsh
+
+      - name: Move Executable to Root
+        run: |
+          Move-Item "dist\${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}"
         shell: pwsh
 
       - name: Package as Installer
