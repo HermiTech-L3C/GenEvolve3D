@@ -9,8 +9,11 @@ on:
       - main
 
 jobs:
-  install-dependencies:
+  setup-environment:
     runs-on: windows-latest
+    env:
+      PYTHON_VERSION: '3.11'
+
     steps:
       - name: Clear Workspace
         run: Remove-Item -Recurse -Force * -Exclude .git, .github
@@ -50,7 +53,7 @@ jobs:
         shell: pwsh
 
   build-and-package:
-    needs: install-dependencies
+    needs: setup-environment
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.11'
