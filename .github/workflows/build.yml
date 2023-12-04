@@ -2,11 +2,9 @@ name: Build and Package GenEvolve3D Application
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-package:
@@ -19,12 +17,6 @@ jobs:
       EXECUTABLE_NAME: GenEvolve3D
 
     steps:
-      - name: Reset Workspace
-        run: |
-          Remove-Item -Path "*" -Recurse -Force -ErrorAction SilentlyContinue
-        shell: pwsh
-        working-directory: ${{ github.workspace }}
-
       - name: Checkout Code
         uses: actions/checkout@v2
 
@@ -33,19 +25,18 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create and Activate Virtual Environment
-        run: |
-          python -m venv ${{ env.VENV_PATH }}
-          . ${{ env.VENV_PATH }}\Scripts\Activate
+      - name: Create Virtual Environment
+        run: python -m venv ${{ env.VENV_PATH }}
         shell: pwsh
 
-      - name: Install Python Dependencies
+      - name: Activate Virtual Environment and Install Dependencies
         run: |
+          . ${{ env.VENV_PATH }}\Scripts\Activate
           python -m pip install --upgrade pip
           pip install numpy pyface traits mayavi vtk pyinstaller
         shell: pwsh
 
-      - name: Install Visual Studio 2019 Build Tools and NSIS
+      - name: Install Build Tools and NSIS
         run: |
           choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
           choco install nsis -y
@@ -59,19 +50,17 @@ jobs:
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
 
-      - name: List Files in Root Directory (Debugging)
-        run: |
-          dir
+      - name: Debugging - List Files in Root Directory
+        run: dir
         shell: cmd
         working-directory: ${{ github.workspace }}
 
-      - name: Package as Installer
-        run: |
-          makensis .github/workflows/installer.nsi
+      - name: Package Executable as Installer
+        run: makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
-      - name: Upload Installer
+      - name: Upload Installer Artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.INSTALLER_NAME }}
