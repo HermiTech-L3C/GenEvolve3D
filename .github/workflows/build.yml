@@ -15,6 +15,7 @@ jobs:
       PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
+      QT_API: pyqt5  # Set the QT_API environment variable
 
     steps:
       - name: Checkout Code
@@ -33,7 +34,7 @@ jobs:
         run: |
           . ${{ env.VENV_PATH }}\Scripts\Activate
           python -m pip install --upgrade pip
-          pip install numpy pyface traits mayavi vtk pyinstaller PyQt5
+          pip install --upgrade numpy pyface traits mayavi vtk pyinstaller PyQt5
         shell: pwsh
 
       - name: Install Build Tools and NSIS
