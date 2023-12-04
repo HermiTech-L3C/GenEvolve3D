@@ -67,9 +67,8 @@ jobs:
 
       - name: Package Executable as Installer
         run: |
-          makensis .github/workflows/installer.nsi
+          makensis ${{ github.workspace }}/.github/workflows/installer.nsi
         shell: cmd
-        working-directory: ${{ github.workspace }}/.github/workflows/
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v2
