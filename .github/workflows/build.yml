@@ -13,6 +13,7 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.9'
+      VENV_PATH: ${{ github.workspace }}\venv
       PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
@@ -25,6 +26,18 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Reset Workspace
+        run: |
+          Remove-Item -Path "*" -Recurse -Force -ErrorAction SilentlyContinue
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+
+      - name: Create and Activate Virtual Environment
+        run: |
+          python -m venv ${{ env.VENV_PATH }}
+          . ${{ env.VENV_PATH }}\Scripts\Activate
+        shell: pwsh
 
       - name: Install Python Dependencies
         run: |
