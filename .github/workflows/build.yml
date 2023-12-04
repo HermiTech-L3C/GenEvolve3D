@@ -53,15 +53,10 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME $env:PYTHON_PATH\main.py `
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath ${{ github.workspace }} $env:PYTHON_PATH\main.py `
           --hidden-import traitsui --hidden-import pyface.ui.null `
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
-        shell: pwsh
-
-      - name: Move Executable to Root
-        run: |
-          Move-Item "dist\${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}"
         shell: pwsh
 
       - name: List Files in Root Directory (Debugging)
