@@ -16,8 +16,7 @@ jobs:
 
     steps:
       - name: Clear Workspace
-        run: |
-          Remove-Item -Recurse -Force * -Exclude .git, .github
+        run: Remove-Item -Recurse -Force * -Exclude .git, .github
         shell: pwsh
 
       - name: Checkout Code
@@ -29,48 +28,114 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Visual Studio 2019 Build Tools
-        run: |
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+        run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
         shell: pwsh
 
       - name: Create Virtual Environment
-        run: |
-          python -m venv venv
+        run: python -m venv venv
         shell: pwsh
 
       - name: Upgrade Pip
-        run: |
-          python -m pip install --upgrade pip
+        run: python -m pip install --upgrade pip
         shell: pwsh
 
-      - name: Install Myavi Wheel Dependencies
+      - name: Install Mayavi Wheel Dependencies
         run: |
-          pip install numpy mayavi # Add any additional Myavi dependencies here
+          choco install libxml2 -y
+          pip install numpy mayavi # Add any additional Mayavi dependencies here
         working-directory: ${{ github.workspace }}
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
 
       - name: Build Executable
-        run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
         shell: pwsh
 
       - name: Copy Executable to NSIS Directory
-        run: |
-          cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
+        run: cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
         shell: pwsh
 
       - name: Install NSIS
-        run: |
-          choco install nsis -y
+        run: choco install nsis -y
         shell: pwsh
 
       - name: Package as Installer
+        run: makensis .github/workflows/installer.nsi
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: GenEvolve3D-Installer
+          path: ./.github/workflows/GenEvolve3D-Setup.exe
+name: Build and Package GenEvolve3D Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+    env:
+      PYTHON_VERSION: '3.11'
+
+    steps:
+      - name: Clear Workspace
+        run: Remove-Item -Recurse -Force * -Exclude .git, .github
+        shell: pwsh
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Visual Studio 2019 Build Tools
+        run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+        shell: pwsh
+
+      - name: Create Virtual Environment
+        run: python -m venv venv
+        shell: pwsh
+
+      - name: Upgrade Pip
+        run: python -m pip install --upgrade pip
+        shell: pwsh
+
+      - name: Install Mayavi Wheel Dependencies
         run: |
-          makensis .github/workflows/installer.nsi
+          choco install libxml2 -y
+          pip install numpy mayavi # Add any additional Mayavi dependencies here
+        working-directory: ${{ github.workspace }}
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+        working-directory: ${{ github.workspace }}
+
+      - name: Build Executable
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        shell: pwsh
+
+      - name: Copy Executable to NSIS Directory
+        run: cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
+        shell: pwsh
+
+      - name: Install NSIS
+        run: choco install nsis -y
+        shell: pwsh
+
+      - name: Package as Installer
+        run: makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
