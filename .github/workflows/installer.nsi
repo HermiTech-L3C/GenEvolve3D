@@ -17,7 +17,10 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "GenEvolve3D.exe"  ; Update this line to point to the correct executable path
+    
+    ; Assuming the executable is in the 'dist' directory created by PyInstaller
+    File "dist\GenEvolve3D.exe"
+
     CreateDirectory "$SMPROGRAMS\GenEvolve3D"
     CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
