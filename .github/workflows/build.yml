@@ -50,16 +50,8 @@ jobs:
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
 
-      - name: Debugging - List Files in Root Directory
-        run: |
-          echo "Listing files in the GitHub workspace:"
-          dir
-        shell: cmd
-        working-directory: ${{ github.workspace }}
-
       - name: Package Executable as Installer
         run: |
-          echo "Running NSIS to create installer..."
           makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
