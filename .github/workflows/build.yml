@@ -1,4 +1,4 @@
-name: Build and Package GenEvolve3D Application
+name: Build and Package GenEvolve3D Application with Docker
 
 on:
   push:
@@ -7,72 +7,46 @@ on:
     branches: [main]
 
 jobs:
-  build-and-package:
+  docker-build-and-package:
     runs-on: windows-latest
+
     env:
-      PYTHON_VERSION: '3.9'
-      VENV_PATH: D:\a\GenEvolve3D\GenEvolve3D\venv
-      PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
-      INSTALLER_NAME: GenEvolve3D-Installer
-      EXECUTABLE_NAME: GenEvolve3D
-      QT_API: pyqt5  # Set the QT_API environment variable
+      DOCKER_IMAGE_NAME: genevolve3d
+      DOCKER_IMAGE_TAG: latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker Image
+        run: |
+          docker buildx create --use
+          docker buildx build --file Dockerfile -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+        if: success()
+
+      - name: Run Application in Docker Container
+        run: docker run --name $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+        if: success()
+
+      # Optional: Push the Docker image to a registry like Docker Hub or GitHub Container Registry
+      - name: Log in to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Create Virtual Environment
-        run: python -m venv ${{ env.VENV_PATH }}
-        shell: pwsh
+      - name: Push Docker Image to Registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
 
-      - name: Activate Virtual Environment and Install Dependencies
-        run: |
-          . ${{ env.VENV_PATH }}\Scripts\Activate
-          python -m pip install --upgrade pip
-          pip install --upgrade numpy pyface traits mayavi vtk pyinstaller PyQt5
-        shell: pwsh
-
-      - name: Install Build Tools and NSIS
-        run: |
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-          choco install nsis -y
-        shell: pwsh
-
-      - name: Build Executable with PyInstaller
-        run: |
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath ${{ github.workspace }} $env:PYTHON_PATH\main.py `
-          --hidden-import traitsui --hidden-import pyface.ui.null `
-          --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
-          --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4 --hidden-import PyQt5
-        shell: pwsh
-
-      - name: Verify Executable Creation
-        run: |
-          if (Test-Path "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe") {
-            echo "Executable found."
-          } else {
-            echo "Executable not found. Exiting..."
-            exit 1
-          }
-        shell: pwsh
-
-      - name: Copy Executable to NSIS Script Location
-        run: |
-          Copy-Item "${{ github.workspace }}/${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}/.github/workflows/"
-        shell: pwsh
-
-      - name: Package Executable as Installer
-        run: |
-          makensis ${{ github.workspace }}/.github/workflows/installer.nsi
-        shell: cmd
-
-      - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v2
+      # Optional: Cache Docker layers for faster builds
+      - name: Cache Docker Layers
+        if: success()
+        uses: actions/cache@v2
         with:
-          name: ${{ env.INSTALLER_NAME }}
-          path: ${{ github.workspace }}/.github/workflows/${{ env.EXECUTABLE_NAME }}-Setup.exe
+          path: ~/.docker
+          key: docker-layers-${{ runner.os }}-${{ hashFiles('**/Dockerfile') }}
