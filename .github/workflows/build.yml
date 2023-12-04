@@ -13,71 +13,33 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Clear Workspace
-        run: Remove-Item -Recurse -Force * -Exclude .git, .github
-        shell: pwsh
-
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.9 and Install Dependencies
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy>=1.22.2 pyface>=7.2.1 traits>=6.3.0 mayavi>=4.8.0 vtk>=9.0.1 pyinstaller
 
       - name: Install Visual Studio 2019 Build Tools
         run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
         shell: pwsh
 
-      - name: Create Virtual Environment
-        run: python -m venv venv
-        shell: pwsh
-
-      - name: Upgrade Pip
-        run: python -m pip install --upgrade pip
-        shell: pwsh
-
-      - name: Install Dependencies
-        run: |
-          pip install numpy>=1.22.2 pyface>=7.2.1 traits>=6.3.0 mayavi>=4.8.0 vtk>=9.0.1
-        working-directory: ${{ github.workspace }}
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-        shell: pwsh
-
-      - name: Generate PyInstaller Spec File
-        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+      - name: Build Executable with PyInstaller
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py --hidden-import traitsui --hidden-import pyface.ui.null --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
         env:
           pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
 
-      - name: Modify PyInstaller Spec File
-        run: |
-          $specContent = Get-Content GenEvolve3D.spec
-          # Add more specific modules for pyface and traitsui backends if necessary
-          $hiddenImports = "'traitsui', 'pyface.ui.null', 'traitsui.toolkits', 'traitsui.null', 'pyface.ui.qt4', 'pyface.ui.qt4.init', 'pyface.toolkits.qt4', 'traitsui.qt4'"
-          $specContent = $specContent -replace "hiddenimports=\[\]", "hiddenimports=[$hiddenImports]"
-          Set-Content GenEvolve3D.spec -Value $specContent
-        shell: pwsh
-
-      - name: Build Executable with Spec File
-        run: pyinstaller GenEvolve3D.spec
-        shell: pwsh
-
-      - name: Copy Executable to NSIS Directory
-        run: |
-          cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
-        shell: pwsh
-
       - name: Install NSIS
-        run: |
-          choco install nsis -y
+        run: choco install nsis -y
         shell: pwsh
 
       - name: Package as Installer
-        run: |
-          makensis .github/workflows/installer.nsi
+        run: makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
