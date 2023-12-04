@@ -50,19 +50,23 @@ jobs:
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
 
-      - name: Copy Executable for NSIS
+      - name: Verify Executable Creation
         run: |
-          Copy-Item "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe" ".github/workflows/"
+          if (Test-Path "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe") {
+            echo "Executable found."
+          } else {
+            echo "Executable not found. Exiting..."
+            exit 1
+          }
         shell: pwsh
 
       - name: Package Executable as Installer
         run: |
-          makensis .github/workflows/installer.nsi
+          makensis ${{ github.workspace }}\.github\workflows\installer.nsi
         shell: cmd
-        working-directory: .github/workflows
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.INSTALLER_NAME }}
-          path: ./.github/workflows/${{ env.EXECUTABLE_NAME }}-Setup.exe
+          path: ${{ github.workspace }}/${{ env.EXECUTABLE_NAME }}-Setup.exe
