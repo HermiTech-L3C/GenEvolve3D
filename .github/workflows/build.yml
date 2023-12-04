@@ -11,15 +11,28 @@ on:
 jobs:
   build-and-package:
     runs-on: windows-latest
+    env:
+      PYTHON_VERSION: '3.9'
+      PYTHON_PATH: ${{ github.workspace }}\src
+      INSTALLER_NAME: GenEvolve3D-Installer
+      EXECUTABLE_NAME: GenEvolve3D
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~\pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install Python Dependencies
         run: |
@@ -27,7 +40,7 @@ jobs:
           pip install numpy pyface traits mayavi vtk pyinstaller
         shell: pwsh
 
-      - name: Install Visual Studio 2019 Build Tools and NSIS
+      - name: Install Build Tools and NSIS
         run: |
           choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
           choco install nsis -y
@@ -35,13 +48,11 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py \
+          pyinstaller --onefile --noconsole --paths ${{ env.PYTHON_PATH }} --name ${{ env.EXECUTABLE_NAME }} src/main.py \
           --hidden-import traitsui --hidden-import pyface.ui.null \
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 \
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
-        env:
-          PYTHONPATH: ${{ github.workspace }}\src
 
       - name: Package as Installer
         run: |
@@ -52,5 +63,5 @@ jobs:
       - name: Upload Installer
         uses: actions/upload-artifact@v2
         with:
-          name: GenEvolve3D-Installer
-          path: ./.github/workflows/GenEvolve3D-Setup.exe
+          name: ${{ env.INSTALLER_NAME }}
+          path: ./.github/workflows/${{ env.EXECUTABLE_NAME }}-Setup.exe
