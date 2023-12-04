@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  setup-environment:
+  build-and-package:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.11'
@@ -31,42 +31,15 @@ jobs:
         run: python -m venv venv
 
       - name: Upgrade Pip
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel  # Ensure wheel is installed
-        shell: pwsh
-
-      - name: Install Visual Studio 2019 Build Tools
-        run: |
-          choco install visualstudio2019buildtools -y
-          choco install visualstudio2019-workload-vctools -y
-        shell: pwsh
+        run: python -m pip install --upgrade pip
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
 
-      - name: Install PyInstaller
-        run: |
-          $python_exe = "${{ github.workspace }}/venv/Scripts/python.exe"
-          & $python_exe -m pip install pyinstaller
-        shell: pwsh
-
-  build-and-package:
-    needs: setup-environment
-    runs-on: windows-latest
-    env:
-      PYTHON_VERSION: '3.11'
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
       - name: Build Executable
-        run: |
-          $pyinstaller_path = "${{ github.workspace }}/venv/Scripts/pyinstaller.exe"
-          & $pyinstaller_path --onefile --noconsole --paths src --name GenEvolve3D src/main.py
-        shell: pwsh
+        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        shell: cmd
         working-directory: ${{ github.workspace }}
 
       - name: Copy Executable to NSIS Directory
@@ -75,13 +48,6 @@ jobs:
 
       - name: Install NSIS
         run: choco install nsis -y
-
-      - name: Stage Application and Dependencies
-        run: |
-          mkdir staged_app
-          cp -r ./dist/* ./staged_app/
-          cp -r ./venv/Lib/site-packages/* ./staged_app/
-        working-directory: ${{ github.workspace }}
 
       - name: Package as Installer
         run: makensis .github/workflows/installer.nsi
