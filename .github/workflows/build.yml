@@ -39,30 +39,29 @@ jobs:
         run: python -m pip install --upgrade pip
         shell: pwsh
 
-      - name: Install Mayavi Wheel Dependencies
-        run: |
-          choco install libxml2 -y
-          pip install numpy mayavi # Add any additional Mayavi dependencies here
-        working-directory: ${{ github.workspace }}
-
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install numpy==1.22.2 pyface==7.2.1 traits==6.3.0 mayavi==4.8.0 vtk>=9.0.1
         working-directory: ${{ github.workspace }}
 
       - name: Build Executable
-        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        run: |
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
         shell: pwsh
 
       - name: Copy Executable to NSIS Directory
-        run: cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
+        run: |
+          cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
         shell: pwsh
 
       - name: Install NSIS
-        run: choco install nsis -y
+        run: |
+          choco install nsis -y
         shell: pwsh
 
       - name: Package as Installer
-        run: makensis .github/workflows/installer.nsi
+        run: |
+          makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
