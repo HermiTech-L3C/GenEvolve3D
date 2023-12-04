@@ -51,6 +51,12 @@ jobs:
           Move-Item "dist\${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}"
         shell: pwsh
 
+      - name: List Files in Root Directory (Debugging)
+        run: |
+          dir
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
       - name: Package as Installer
         run: |
           makensis .github/workflows/installer.nsi
