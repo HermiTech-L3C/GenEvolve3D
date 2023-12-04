@@ -55,8 +55,8 @@ jobs:
       - name: Modify PyInstaller Spec File
         run: |
           $specContent = Get-Content GenEvolve3D.spec
-          $hiddenImports = ", 'traitsui', 'pyface.ui.null', 'traitsui.toolkits', 'traitsui.null'"
-          $specContent = $specContent -replace "hiddenimports=\[\]", "hiddenimports=\[$hiddenImports\]"
+          $hiddenImports = "'traitsui', 'pyface.ui.null', 'traitsui.toolkits', 'traitsui.null'"
+          $specContent = $specContent -replace "hiddenimports=\[\]", "hiddenimports=[$hiddenImports]"
           Set-Content GenEvolve3D.spec -Value $specContent
         shell: pwsh
 
