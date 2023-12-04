@@ -1,5 +1,7 @@
-import threading
-from GUI import EvolutionGUI, Evolution
+# main.py
+
+from evolution_gui import EvolutionGUI
+from evolution import Evolution
 
 def main():
     evolution = Evolution(population_size=100)
