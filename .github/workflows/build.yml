@@ -60,6 +60,11 @@ jobs:
           }
         shell: pwsh
 
+      - name: Copy Executable to NSIS Script Location
+        run: |
+          Copy-Item "${{ github.workspace }}/${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}/.github/workflows/"
+        shell: pwsh
+
       - name: Package Executable as Installer
         run: |
           makensis ${{ github.workspace }}\.github\workflows\installer.nsi
