@@ -43,8 +43,7 @@ class EvolutionGUI(HasTraits):
         self.stop_button.config(state=tk.DISABLED)
 
     def update_status(self):
-        # Adjust the number of generations to visualize
-        if self.evolution.generation < 100:  
+        if self.evolution.generation < 100:  # Adjust the number of generations to visualize
             self.evolution.run_generation()
             self.scene.mlab.clf()
             self.draw_gene_network()
