@@ -50,11 +50,16 @@ jobs:
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
         shell: pwsh
 
+      - name: Copy Executable for NSIS
+        run: |
+          Copy-Item "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe" ".github/workflows/"
+        shell: pwsh
+
       - name: Package Executable as Installer
         run: |
           makensis .github/workflows/installer.nsi
         shell: cmd
-        working-directory: ${{ github.workspace }}
+        working-directory: .github/workflows
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v2
