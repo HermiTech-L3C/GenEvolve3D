@@ -51,12 +51,16 @@ jobs:
         shell: pwsh
 
       - name: Debugging - List Files in Root Directory
-        run: dir
+        run: |
+          echo "Listing files in the GitHub workspace:"
+          dir
         shell: cmd
         working-directory: ${{ github.workspace }}
 
       - name: Package Executable as Installer
-        run: makensis .github/workflows/installer.nsi
+        run: |
+          echo "Running NSIS to create installer..."
+          makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
