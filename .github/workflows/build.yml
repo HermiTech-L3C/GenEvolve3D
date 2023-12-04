@@ -16,7 +16,8 @@ jobs:
 
     steps:
       - name: Clear Workspace
-        run: Remove-Item -Recurse -Force * -Exclude .git, .github
+        run: |
+          Remove-Item -Recurse -Force * -Exclude .git, .github
         shell: pwsh
 
       - name: Checkout Code
@@ -27,30 +28,49 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Install Visual Studio 2019 Build Tools
+        run: |
+          choco install visualstudio2019buildtools --package-parameters "--allWorkloads --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+        shell: pwsh
+
       - name: Create Virtual Environment
-        run: python -m venv venv
+        run: |
+          python -m venv venv
+        shell: pwsh
 
       - name: Upgrade Pip
-        run: python -m pip install --upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+        shell: pwsh
+
+      - name: Install Myavi Wheel Dependencies
+        run: |
+          pip install numpy mayavi # Add any additional Myavi dependencies here
+        working-directory: ${{ github.workspace }}
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
         working-directory: ${{ github.workspace }}
 
       - name: Build Executable
-        run: pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
-        shell: cmd
-        working-directory: ${{ github.workspace }}
+        run: |
+          pyinstaller --onefile --noconsole --paths src --name GenEvolve3D src/main.py
+        shell: pwsh
 
       - name: Copy Executable to NSIS Directory
-        run: cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
+        run: |
+          cp ./dist/GenEvolve3D.exe ./.github/workflows/GenEvolve3D.exe
         shell: pwsh
 
       - name: Install NSIS
-        run: choco install nsis -y
+        run: |
+          choco install nsis -y
+        shell: pwsh
 
       - name: Package as Installer
-        run: makensis .github/workflows/installer.nsi
+        run: |
+          makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
