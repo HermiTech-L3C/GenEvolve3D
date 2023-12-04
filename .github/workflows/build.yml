@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Visual Studio 2019 Build Tools
         run: |
-          choco install visualstudio2019buildtools --package-parameters "--allWorkloads --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
         shell: pwsh
 
       - name: Create Virtual Environment
