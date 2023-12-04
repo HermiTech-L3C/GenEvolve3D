@@ -11,8 +11,6 @@ on:
 jobs:
   build-and-package:
     runs-on: windows-latest
-    env:
-      PYTHON_VERSION: '3.11'
 
     steps:
       - name: Clear Workspace
@@ -22,10 +20,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Python
+      # Python version is set to 3.9 due to compatibility issues with mayavi and Python 3.11
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.9'
 
       - name: Install Visual Studio 2019 Build Tools
         run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
@@ -39,6 +38,7 @@ jobs:
         run: python -m pip install --upgrade pip
         shell: pwsh
 
+      # Using flexible version requirements for dependencies
       - name: Install Dependencies
         run: |
           pip install numpy>=1.22.2 pyface>=7.2.1 traits>=6.3.0 mayavi>=4.8.0 vtk>=9.0.1
