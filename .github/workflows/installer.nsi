@@ -17,10 +17,7 @@ ShowUnInstDetails show
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    
-    ; The executable is expected to be in the root of the GitHub workspace
     File "GenEvolve3D.exe"
-
     CreateDirectory "$SMPROGRAMS\GenEvolve3D"
     CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
