@@ -13,12 +13,18 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: '3.9'
-      VENV_PATH: ${{ github.workspace }}\venv
+      VENV_PATH: D:\a\GenEvolve3D\GenEvolve3D\venv
       PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
 
     steps:
+      - name: Reset Workspace
+        run: |
+          Remove-Item -Path "*" -Recurse -Force -ErrorAction SilentlyContinue
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+
       - name: Checkout Code
         uses: actions/checkout@v2
 
@@ -26,12 +32,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Reset Workspace
-        run: |
-          Remove-Item -Path "*" -Recurse -Force -ErrorAction SilentlyContinue
-        shell: pwsh
-        working-directory: ${{ github.workspace }}
 
       - name: Create and Activate Virtual Environment
         run: |
