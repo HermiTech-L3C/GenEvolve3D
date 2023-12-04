@@ -27,8 +27,10 @@ jobs:
           pip install numpy pyface traits mayavi vtk pyinstaller
         shell: pwsh
 
-      - name: Install Visual Studio 2019 Build Tools
-        run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+      - name: Install Visual Studio 2019 Build Tools and NSIS
+        run: |
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          choco install nsis -y
         shell: pwsh
 
       - name: Build Executable with PyInstaller
@@ -41,12 +43,9 @@ jobs:
         env:
           pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
 
-      - name: Install NSIS
-        run: choco install nsis -y
-        shell: pwsh
-
       - name: Package as Installer
-        run: makensis .github/workflows/installer.nsi
+        run: |
+          makensis .github/workflows/installer.nsi
         shell: cmd
         working-directory: ${{ github.workspace }}
 
