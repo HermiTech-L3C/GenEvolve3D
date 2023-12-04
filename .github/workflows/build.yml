@@ -22,11 +22,11 @@ jobs:
         run: echo "DOCKER_IMAGE_NAME_LOWER=$(echo $DOCKER_IMAGE_NAME | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build Docker Image
-        run: docker build -t $($DOCKER_IMAGE_NAME_LOWER:$DOCKER_IMAGE_TAG) .
+        run: docker build -t genevolve3d:latest .
         if: success()
 
       - name: Run Application in Docker Container
-        run: docker run --name $($DOCKER_IMAGE_NAME_LOWER:$DOCKER_IMAGE_TAG) $($DOCKER_IMAGE_NAME_LOWER:$DOCKER_IMAGE_TAG)
+        run: docker run --name genevolve3d genevolve3d:latest
         if: success()
 
       # Optional: Push the Docker image to a registry like Docker Hub or GitHub Container Registry
@@ -39,7 +39,7 @@ jobs:
 
       - name: Push Docker Image to Registry
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: docker push $($DOCKER_IMAGE_NAME_LOWER:$DOCKER_IMAGE_TAG)
+        run: docker push genevolve3d:latest
 
       # Optional: Cache Docker layers for faster builds
       - name: Cache Docker Layers
