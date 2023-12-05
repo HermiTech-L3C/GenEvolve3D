@@ -28,14 +28,10 @@ jobs:
           python -m pip install --upgrade pip
         shell: pwsh
 
-      - name: Install pyqt5
+      - name: Install Dependencies
         run: |
-          pip install pyqt5
-        shell: pwsh
-
-      - name: Install cx_Freeze, vispy, and other dependencies
-        run: |
-          pip install -r requirements.txt cx_Freeze vispy
+          # Install PyQt5 and other dependencies
+          pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Cache Python Dependencies
@@ -46,12 +42,14 @@ jobs:
 
       - name: Build Application
         run: |
+          # Change to the source directory and build the application
           cd ${{ github.workspace }}/src
           python setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
+          # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
           if (Test-Path "$buildPath/GenEvolve3D.exe") {
@@ -71,6 +69,7 @@ jobs:
 
       - name: Create and Upload Installer
         run: |
+          # Create installer using NSIS and upload
           makensis .github/workflows/installer.nsi
           mv GenEvolve3D-Setup.exe GenEvolve3D-Installer.exe
         shell: pwsh
