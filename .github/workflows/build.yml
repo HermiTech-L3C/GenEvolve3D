@@ -12,10 +12,6 @@ jobs:
   build-and-package:
     runs-on: windows-latest
 
-    env:
-      BUILD_DIR: ${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9
-      EXECUTABLE_PATH: ${{ github.workspace }}/GenEvolve3D/main.exe
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -67,43 +63,45 @@ jobs:
         shell: pwsh
 
       - name: Build Application
-        run: python ${{ github.workspace }}/src/setup.py build
-        shell: pwsh
-
-      - name: Set Executable Path
         run: |
-          $env:EXECUTABLE_PATH = Join-Path $env:BUILD_DIR 'main.exe'
+          python ${{ github.workspace }}/src/setup.py build
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
+          Write-Host "Contents of ${buildPath}:"
+          Get-ChildItem -Path $buildPath -Recurse
         shell: pwsh
 
       - name: Copy Executable
         run: |
-          Write-Host "Checking for executable at: $env:EXECUTABLE_PATH"
-          # Use $env:BUILD_DIR in the path to check for the executable
-          if (Test-Path $env:EXECUTABLE_PATH) {
-            Write-Host "Executable found at $env:EXECUTABLE_PATH"
-            Copy-Item $env:EXECUTABLE_PATH -Destination $env:GITHUB_WORKSPACE/GenEvolve3D -Force
+          $srcPath = "${{ github.workspace }}/repo/src"
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
+          $executablePath = Join-Path $buildPath 'main.exe'
+          $targetPath = "${{ github.workspace }}/GenEvolve3D"
+          Write-Host "Checking for executable at: $executablePath"
+          # Use $buildPath in the path to check for the executable
+          if (Test-Path $executablePath) {
+            Write-Host "Executable found at $executablePath"
+            Copy-Item $executablePath -Destination $targetPath -Force
           } else {
-            Write-Host "Executable not found at $env:EXECUTABLE_PATH. Exiting..."
+            Write-Host "Executable not found at $executablePath. Exiting..."
             exit 1
           }
         shell: pwsh
+        env:
+          BUILD_DIR: D:\a\GenEvolve3D\GenEvolve3D\repo\src\build\exe.win-amd64-3.9
+          EXECUTABLE_PATH: D:\a\GenEvolve3D\GenEvolve3D\repo\src\build\exe.win-amd64-3.9\main.exe
+          pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
 
       - name: Upload Packaged Application
-        if: success()
+        if: Test-Path "${{ github.workspace }}/GenEvolve3D.zip"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D
-          path: GenEvolve3D
-
-      - name: Persist Executable Path
-        if: success()
-        run: echo "EXECUTABLE_PATH=${{ env.EXECUTABLE_PATH }}" >> $GITHUB_ENV
+          path: GenEvolve3D.zip
 
       - name: Create and Upload Installer
-        if: success()
         run: |
           Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ github.workspace }}/.github/workflows/installer.nsi"
+          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
@@ -117,7 +115,7 @@ jobs:
         shell: pwsh
 
       - name: Upload Installer
-        if: success()
+        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
