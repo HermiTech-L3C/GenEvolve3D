@@ -21,7 +21,7 @@ jobs:
         with:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
-
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -44,7 +44,7 @@ jobs:
           if (-not (Test-Path $buildPath)) {
             New-Item -ItemType Directory -Path $buildPath -Force
           }
-          cd "${{ github.workspace }}/repo/src"
+          Set-Location "${{ github.workspace }}/repo/src"
           python setup.py build
         shell: pwsh
 
@@ -53,12 +53,8 @@ jobs:
           .\venv\Scripts\Activate
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
-          Write-Host "Contents of ${buildPath}:"
-          Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
           if (Test-Path $executablePath) {
             Copy-Item $executablePath -Destination $installDir -Force
-            Write-Host "Contents of ${installDir}:"
-            Get-ChildItem -Path $installDir
             Compress-Archive -Path "${installDir}\*" -DestinationPath "${{ github.workspace }}/GenEvolve3D.zip"
             Write-Host "Executable packaged successfully."
           } else {
@@ -73,26 +69,3 @@ jobs:
         with:
           name: GenEvolve3D
           path: GenEvolve3D.zip
-
-      - name: Create and Upload Installer
-        run: |
-          Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
-          if (Test-Path $nsisScriptPath) {
-            (Get-Content $nsisScriptPath) | ForEach-Object {
-              $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
-            } | Set-Content $nsisScriptPath
-            Write-Output "Running NSIS to create installer"
-            Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
-          } else {
-            Write-Output "NSIS script not found at ${nsisScriptPath}. Exiting..."
-            exit 1
-          }
-        shell: pwsh
-
-      - name: Upload Installer
-        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
-        uses: actions/upload-artifact@v2
-        with:
-          name: GenEvolve3D-Installer
-          path: GenEvolve3D-Setup.exe
