@@ -37,6 +37,6 @@ Section "Uninstall"
     Delete "$INSTDIR\Uninstall.exe"
     
     ; Remove program directory and uninstaller
-    RMDir "$SMPROGRAMS\GenEvolve3D"
-    RMDir "$INSTDIR"
+    RMDir /r "$SMPROGRAMS\GenEvolve3D"
+    RMDir /r "$INSTDIR"
 SectionEnd
