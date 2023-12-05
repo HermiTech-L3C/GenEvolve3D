@@ -40,6 +40,11 @@ jobs:
           pip install cx_Freeze
         shell: pwsh
 
+      - name: Install pyqt5
+        run: |
+          pip install pyqt5
+        shell: pwsh
+
       - name: Install vispy
         run: |
           pip install vispy
