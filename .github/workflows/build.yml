@@ -10,11 +10,12 @@ jobs:
   build-and-package:
     runs-on: windows-latest
     env:
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: 3.9
       VENV_PATH: D:\a\GenEvolve3D\GenEvolve3D\venv
       PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
+      pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
 
     steps:
       - name: Checkout Code
@@ -44,12 +45,12 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath ${{ github.workspace }} $env:PYTHON_PATH\main.py `
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath D:\a\GenEvolve3D\GenEvolve3D $env:PYTHON_PATH\main.py `
           --hidden-import traitsui --hidden-import pyface.ui.null `
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
-          --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
-          --add-data $env:PYTHON_PATH\evolution.py;evolution `
-          --add-data $env:PYTHON_PATH\evolution_pythreejs.py;evolution_pythreejs
+          --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4 `
+          --add-data "$env:PYTHON_PATH\evolution.py;evolution" `
+          --add-data "$env:PYTHON_PATH\evolution_pythreejs.py;evolution_pythreejs"
         shell: pwsh
 
       - name: Verify Executable Creation
