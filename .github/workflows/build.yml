@@ -25,17 +25,18 @@ jobs:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Install Dependencies
+      - name: Create Virtual Environment and Install Dependencies
         run: |
           python -m venv venv
           & venv/Scripts/Activate
           python -m pip install --upgrade pip
-          pip install numpy pyface traits mayavi vtk pythreejs
+          pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
         shell: pwsh
 
       - name: Build Application with cx_Freeze
         run: |
           & venv/Scripts/Activate
+          cd src
           python setup.py build
         shell: pwsh
 
@@ -74,7 +75,7 @@ jobs:
           !insertmacro MUI_LANGUAGE "English"
           Section "Install"
               SetOutPath "$INSTDIR"
-              File 'build/exe.win-amd64-3.9/GenEvolve3D.exe'
+              File 'src/build/exe.win-amd64-3.9/GenEvolve3D.exe'
               CreateDirectory "$SMPROGRAMS\GenEvolve3D"
               CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
               WriteUninstaller "$INSTDIR\Uninstall.exe"
