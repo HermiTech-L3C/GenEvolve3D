@@ -35,76 +35,63 @@ jobs:
         shell: pwsh
 
       - name: Install Dependencies
-        run: |
-          # Install PyQt5 and other dependencies
-          pip install pyqt5 -r requirements.txt cx_Freeze vispy
+        run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Build Application
-        run: |
-          # Change to the source directory and build the application
-          cd ${{ github.workspace }}/src
-          python setup.py build
+        run: python ${{ github.workspace }}/src/setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
-          # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = "${{ github.workspace }}/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
 
-          # Debugging: Print the current working directory
-          Write-Host ("Current working directory: " + (Get-Location))
-
-          # Debugging: Print the contents of the buildPath
-          Write-Host ("Contents of ${buildPath}:")
+          Write-Host "Contents of ${buildPath}:"
           Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
 
           if (Test-Path $executablePath) {
-            # Copy executable to the installation directory
             Copy-Item $executablePath -Destination $installDir -Force
-
-            # Debugging: Print the contents of the installation directory
-            Write-Host ("Contents of ${installDir}:")
+            Write-Host "Contents of ${installDir}:"
             Get-ChildItem -Path $installDir
 
-            # Debugging: Print the contents of the zip file
-            $zipPath = "${installDir}\GenEvolve3D.zip"
-            Write-Host ("Contents of ${zipPath}:")
-            Get-ChildItem -Path "${installDir}\*.zip"
-
-            # Compress the installation directory
-            Compress-Archive -Path "${installDir}\*" -DestinationPath "${installDir}\GenEvolve3D.zip"
+            Compress-Archive -Path "${installDir}\*" -DestinationPath "${{ github.workspace }}/GenEvolve3D.zip"
             Write-Host "Executable packaged successfully."
           } else {
-            Write-Host ("Executable not found at ${executablePath}. Exiting...")
+            Write-Host "Executable not found at ${executablePath}. Exiting..."
             exit 1
           }
         shell: pwsh
 
       - name: Upload Packaged Application
+        if: Test-Path "${{ github.workspace }}/GenEvolve3D.zip"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D
           path: GenEvolve3D.zip
 
-      - name: Update Installer Script
-        run: |
-          # Update the NSIS installer script with the correct executable name
-          (Get-Content .github/workflows/installer.nsi) -replace 'GenEvolve3D.exe', 'main.exe' | Set-Content .github/workflows/installer.nsi
-        shell: pwsh
-
       - name: Create and Upload Installer
         run: |
-          # Create installer using NSIS and upload
-          makensis .github/workflows/installer.nsi
-          mv GenEvolve3D-Setup.exe GenEvolve3D-Installer.exe
+          Write-Output "Updating NSIS script"
+          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
+          if (Test-Path $nsisScriptPath) {
+            (Get-Content $nsisScriptPath) | ForEach-Object {
+              $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
+            } | Set-Content $nsisScriptPath
+
+            Write-Output "Running NSIS to create installer"
+            Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
+          } else {
+            Write-Output "NSIS script not found at ${nsisScriptPath}. Exiting..."
+            exit 1
+          }
         shell: pwsh
 
       - name: Upload Installer
+        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: GenEvolve3D-Installer.exe
+          path: GenEvolve3D-Setup.exe
