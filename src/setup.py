@@ -13,10 +13,9 @@ def get_required_packages():
     ]
 
 def get_additional_files():
-    src_folder = os.path.abspath(os.path.join("src", "build", "exe.win-amd64-3.9"))  # Adjust the path accordingly
     return [
-        os.path.join(src_folder, 'evolution.py'),
-        os.path.join(src_folder, 'evolution_gui.py')
+        'src/evolution.py',
+        'src/evolution_gui.py'
         # Add other necessary files here, like images, data files, etc.
     ]
 
@@ -28,7 +27,7 @@ def build_options():
 
 def create_setup():
     base = get_base()
-    main_script = os.path.abspath(os.path.join("src", "main.py"))  # Adjust the path accordingly
+    main_script = "src/main.py"
 
     return setup(
         name="GenEvolve3D",
