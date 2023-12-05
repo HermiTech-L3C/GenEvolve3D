@@ -25,27 +25,18 @@ jobs:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Install Dependencies
-        # Create virtual environment, upgrade pip, and install dependencies
+      - name: Install Dependencies and Build Application
         run: |
           python -m venv venv
           .\venv\Scripts\Activate
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install cx_Freeze pyqt5
-        shell: pwsh
-
-      - name: Build Application with cx_Freeze
-        run: |
-          # Activate virtual environment and build the application
-          .\venv\Scripts\Activate
+          pip install -r requirements.txt cx_Freeze pyqt5
           cd src
           python setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
-          # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
           if (Test-Path "$buildPath/GenEvolve3D.exe") {
@@ -65,36 +56,7 @@ jobs:
 
       - name: Create Installer
         run: |
-          # Create NSIS script and generate installer
-          $nsiScript = @'
-          !include "MUI2.nsh"
-          Name "GenEvolve3D"
-          OutFile "GenEvolve3D-Setup.exe"
-          InstallDir "$PROGRAMFILES\GenEvolve3D"
-          ShowInstDetails show
-          ShowUnInstDetails show
-          !insertmacro MUI_PAGE_WELCOME
-          !insertmacro MUI_PAGE_DIRECTORY
-          !insertmacro MUI_PAGE_INSTFILES
-          !insertmacro MUI_PAGE_FINISH
-          !insertmacro MUI_LANGUAGE "English"
-          Section "Install"
-              SetOutPath "$INSTDIR"
-              File 'src/build/exe.win-amd64-3.9/GenEvolve3D.exe'
-              CreateDirectory "$SMPROGRAMS\GenEvolve3D"
-              CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
-              WriteUninstaller "$INSTDIR\Uninstall.exe"
-          SectionEnd
-          Section "Uninstall"
-              Delete "$INSTDIR\GenEvolve3D.exe"
-              Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"
-              Delete "$INSTDIR\Uninstall.exe"
-              RMDir "$SMPROGRAMS\GenEvolve3D"
-              RMDir "$INSTDIR"
-          SectionEnd
-          '@
-          Set-Content -Path installer.nsi -Value $nsiScript
-          makensis installer.nsi
+          makensis .github/workflows/installer.nsi
         shell: pwsh
 
       - name: Upload Installer
