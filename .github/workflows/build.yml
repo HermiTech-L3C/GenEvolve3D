@@ -16,95 +16,90 @@ jobs:
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
       pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
+      DEPENDENCY_CACHE_KEY: 'python-dependencies-${{ hashFiles('**/requirements.txt') }}'
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create Virtual Environment
-        run: python -m venv ${{ env.VENV_PATH }}
-        shell: pwsh  # Stick with PowerShell for Windows runner
+      - name: Cache Python dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
-      - name: Activate Virtual Environment and Install Dependencies
-        run: |
+      - run: python -m venv ${{ env.VENV_PATH }}
+        shell: pwsh
+
+      - run: |
           . ${{ env.VENV_PATH }}/Scripts/Activate
           python -m pip install --upgrade pip
           pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
-        shell: pwsh  # Stick with PowerShell for Windows runner
+        shell: pwsh
 
-      - name: Create cx_Freeze Setup Script
-        run: |
+      - run: |
           echo "from cx_Freeze import setup, Executable" > setup.py
           echo "setup(name='${{ env.EXECUTABLE_NAME }}', version='0.1', description='GenEvolve3D Application', executables=[Executable('${{ env.PYTHON_PATH }}/main.py')])" >> setup.py
-        shell: pwsh  # Stick with PowerShell for Windows runner
+        shell: pwsh
 
-      - name: Build Executable with cx_Freeze
-        run: |
+      - run: |
           . ${{ env.VENV_PATH }}/Scripts/Activate
           python setup.py build
-        shell: pwsh  # Stick with PowerShell for Windows runner
+        shell: pwsh
 
-      - name: Verify Executable Creation
-        run: |
+      - run: |
           if (Test-Path "build/exe.win-amd64-3.9/${{ env.EXECUTABLE_NAME }}.exe") {
             echo "Executable found."
           } else {
             echo "Executable not found. Exiting..."
             exit 1
           }
-        shell: pwsh  # Stick with PowerShell for Windows runner
+        shell: pwsh
 
-      - name: Zip Application Build
-        run: |
-          Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath "${{ env.EXECUTABLE_NAME }}.zip"
-        shell: pwsh  # Stick with PowerShell for Windows runner
+      - run: Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath "${{ env.EXECUTABLE_NAME }}.zip"
+        shell: pwsh
 
-      - name: Upload Zipped Application
-        uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v2
         with:
           name: ${{ env.EXECUTABLE_NAME }}
           path: ${{ env.EXECUTABLE_NAME }}.zip
-          
-      - name: Package Executable as Installer
-        run: |
-          # Create an NSIS installer script
-          echo "Creating NSIS installer script..."
-          echo '!include "MUI2.nsh"' > installer.nsi
-          echo 'Name "GenEvolve3D"' >> installer.nsi
-          echo 'OutFile "GenEvolve3D-Setup.exe"' >> installer.nsi
-          echo 'InstallDir "$PROGRAMFILES\GenEvolve3D"' >> installer.nsi
-          echo 'ShowInstDetails show' >> installer.nsi
-          echo 'ShowUnInstDetails show' >> installer.nsi
-          echo '!insertmacro MUI_PAGE_WELCOME' >> installer.nsi
-          echo '!insertmacro MUI_PAGE_DIRECTORY' >> installer.nsi
-          echo '!insertmacro MUI_PAGE_INSTFILES' >> installer.nsi
-          echo '!insertmacro MUI_PAGE_FINISH' >> installer.nsi
-          echo '!insertmacro MUI_LANGUAGE "English"' >> installer.nsi
-          echo 'Section "Install"' >> installer.nsi
-          echo '    SetOutPath "$INSTDIR"' >> installer.nsi
-          echo "    File 'build/exe.win-amd64-3.9/${{ env.EXECUTABLE_NAME }}.exe'" >> installer.nsi
-          echo '    CreateDirectory "$SMPROGRAMS\GenEvolve3D"' >> installer.nsi
-          echo '    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"' >> installer.nsi
-          echo '    WriteUninstaller "$INSTDIR\Uninstall.exe"' >> installer.nsi
-          echo 'SectionEnd' >> installer.nsi
-          echo 'Section "Uninstall"' >> installer.nsi
-          echo '    Delete "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"' >> installer.nsi
-          echo '    Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"' >> installer.nsi
-          echo '    Delete "$INSTDIR\Uninstall.exe"' >> installer.nsi
-          echo '    RMDir "$SMPROGRAMS\GenEvolve3D"' >> installer.nsi
-          echo '    RMDir "$INSTDIR"' >> installer.nsi
-          echo 'SectionEnd' >> installer.nsi
-          # Run NSIS to create the installer
-          makensis installer.nsi
-        shell: pwsh  # Stick with PowerShell for Windows runner
 
-      - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v2
+      - run: |
+          $nsi = @"
+          !include "MUI2.nsh"
+          Name "GenEvolve3D"
+          OutFile "GenEvolve3D-Setup.exe"
+          InstallDir "$PROGRAMFILES\GenEvolve3D"
+          ShowInstDetails show
+          ShowUnInstDetails show
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_DIRECTORY
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+          Section "Install"
+              SetOutPath "$INSTDIR"
+              File 'build/exe.win-amd64-3.9/${{ env.EXECUTABLE_NAME }}.exe'
+              CreateDirectory "$SMPROGRAMS\GenEvolve3D"
+              CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"
+              WriteUninstaller "$INSTDIR\Uninstall.exe"
+          SectionEnd
+          Section "Uninstall"
+              Delete "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"
+              Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"
+              Delete "$INSTDIR\Uninstall.exe"
+              RMDir "$SMPROGRAMS\GenEvolve3D"
+              RMDir "$INSTDIR"
+          SectionEnd
+          "@
+          Set-Content -Path installer.nsi -Value $nsi
+          makensis installer.nsi
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v2
         with:
           name: ${{ env.INSTALLER_NAME }}
           path: GenEvolve3D-Setup.exe
