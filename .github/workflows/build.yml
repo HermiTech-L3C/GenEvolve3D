@@ -28,26 +28,26 @@ jobs:
 
       - name: Create Virtual Environment
         run: python -m venv ${{ env.VENV_PATH }}
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Activate Virtual Environment and Install Dependencies
         run: |
-          . ${{ env.VENV_PATH }}\Scripts\Activate
+          . ${{ env.VENV_PATH }}/Scripts/Activate
           python -m pip install --upgrade pip
           pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Create cx_Freeze Setup Script
         run: |
           echo "from cx_Freeze import setup, Executable" > setup.py
           echo "setup(name='${{ env.EXECUTABLE_NAME }}', version='0.1', description='GenEvolve3D Application', executables=[Executable('${{ env.PYTHON_PATH }}/main.py')])" >> setup.py
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Build Executable with cx_Freeze
         run: |
-          . ${{ env.VENV_PATH }}\Scripts\Activate
+          . ${{ env.VENV_PATH }}/Scripts/Activate
           python setup.py build
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Verify Executable Creation
         run: |
@@ -57,12 +57,12 @@ jobs:
             echo "Executable not found. Exiting..."
             exit 1
           }
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Zip Application Build
         run: |
           Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath "${{ env.EXECUTABLE_NAME }}.zip"
-        shell: pwsh
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Upload Zipped Application
         uses: actions/upload-artifact@v2
@@ -99,10 +99,9 @@ jobs:
           echo '    RMDir "$SMPROGRAMS\GenEvolve3D"' >> installer.nsi
           echo '    RMDir "$INSTDIR"' >> installer.nsi
           echo 'SectionEnd' >> installer.nsi
-
           # Run NSIS to create the installer
           makensis installer.nsi
-        shell: cmd
+        shell: pwsh  # Stick with PowerShell for Windows runner
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v2
