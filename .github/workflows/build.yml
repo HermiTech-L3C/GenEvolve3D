@@ -22,36 +22,31 @@ jobs:
       - name: Cache Python Dependencies
         uses: actions/cache@v2
         with:
-          path: ~/AppData/Local/pip/Cache
-          key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
+          path: ~/.pip-cache
+          key: python-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
 
       - name: Install Dependencies
         run: |
           python -m venv venv
-          & venv/Scripts/Activate
+          .\venv\Scripts\Activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install cx_Freeze pyqt5  # Add this line to install cx_Freeze and pyqt5
+          pip install cx_Freeze pyqt5
         shell: pwsh
 
       - name: Build Application with cx_Freeze
         run: |
-          & venv/Scripts/Activate
+          .\venv\Scripts\Activate
           cd src
           python setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
-          & venv/Scripts/Activate
+          .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
-          if (Test-Path "$buildPath/GenEvolve3D.exe") {
-            Compress-Archive -Path "$buildPath/*" -DestinationPath "GenEvolve3D.zip"
-            echo "Executable packaged successfully."
-          } else {
-            echo "Executable not found. Exiting..."
-            exit 1
-          }
+          Compress-Archive -Path "$buildPath/*" -DestinationPath "GenEvolve3D.zip"
+          Write-Host "Executable packaged successfully."
         shell: pwsh
 
       - name: Upload Packaged Application
