@@ -16,6 +16,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Copy Repository
+        run: |
+          cp -r ${{ github.workspace }}/* ${{ runner.temp }}/repo
+        shell: bash
+
       - name: Cache Python Dependencies
         uses: actions/cache@v2
         with:
@@ -39,24 +44,21 @@ jobs:
         shell: pwsh
 
       - name: Build Application
-        run: python ${{ github.workspace }}/src/setup.py build
+        run: python ${{ runner.temp }}/repo/src/setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
           .\venv\Scripts\Activate
-          $buildPath = "${{ github.workspace }}/src/build/exe.win-amd64-3.9"
+          $buildPath = "${{ runner.temp }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
-
           Write-Host "Contents of ${buildPath}:"
           Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
-
           if (Test-Path $executablePath) {
             Copy-Item $executablePath -Destination $installDir -Force
             Write-Host "Contents of ${installDir}:"
             Get-ChildItem -Path $installDir
-
             Compress-Archive -Path "${installDir}\*" -DestinationPath "${{ github.workspace }}/GenEvolve3D.zip"
             Write-Host "Executable packaged successfully."
           } else {
@@ -75,12 +77,11 @@ jobs:
       - name: Create and Upload Installer
         run: |
           Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
+          $nsisScriptPath = "${{ runner.temp }}/repo/.github/workflows/installer.nsi"
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
             } | Set-Content $nsisScriptPath
-
             Write-Output "Running NSIS to create installer"
             Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
           } else {
