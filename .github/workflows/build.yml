@@ -21,7 +21,7 @@ jobs:
         with:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -39,18 +39,15 @@ jobs:
           $repoPath = "${{ github.workspace }}/repo"
           $srcPath = "${repoPath}/src"
           $buildPath = "${srcPath}/build/exe.win-amd64-3.9"
-
           # Ensure the necessary directory structure exists
           if (-not (Test-Path $srcPath)) {
             Write-Host "Creating 'src' directory..."
             New-Item -ItemType Directory -Path $srcPath -Force
           }
-
           if (-not (Test-Path $buildPath)) {
             Write-Host "Creating 'build/exe.win-amd64-3.9' directory..."
             New-Item -ItemType Directory -Path $buildPath -Force
           }
-
           # Copy the repository contents to the src directory
           Write-Host "Copying repository contents to 'src' directory..."
           Get-ChildItem -Recurse "${repoPath}/." | ForEach-Object {
@@ -79,10 +76,8 @@ jobs:
           $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $targetPath = "${{ github.workspace }}/GenEvolve3D"
-
           Write-Host "Checking for executable at: $executablePath"
-
-          # Use $srcPath in the path to check for the executable
+          # Use $buildPath in the path to check for the executable
           if (Test-Path $executablePath) {
             Write-Host "Executable found at $executablePath"
             Copy-Item $executablePath -Destination $targetPath -Force
