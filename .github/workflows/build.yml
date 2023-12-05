@@ -45,7 +45,7 @@ jobs:
             New-Item -ItemType Directory -Path $buildPath -Force
           }
           Set-Location "${{ github.workspace }}/repo/src"
-          python .\setup.py build
+          python setup.py build
         shell: pwsh
 
       - name: Package Executable
