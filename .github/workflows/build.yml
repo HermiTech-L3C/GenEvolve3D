@@ -52,8 +52,11 @@ jobs:
           # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = "${{ github.workspace }}/src/build/exe.win-amd64-3.9"
-          $executablePath = Join-Path $buildPath 'main.exe'  # Update the executable name
+          $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
+
+          # Debugging: Print the current working directory
+          Write-Host ("Current working directory: " + (Get-Location))
 
           # Debugging: Print the contents of the buildPath
           Write-Host ("Contents of ${buildPath}:")
@@ -84,6 +87,9 @@ jobs:
 
       - name: Create and Upload Installer
         run: |
+          # Change to the source directory
+          cd ${{ github.workspace }}/src
+
           # Create installer using NSIS and upload
           makensis .github/workflows/installer.nsi
           mv GenEvolve3D-Setup.exe GenEvolve3D-Installer.exe
