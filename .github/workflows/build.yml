@@ -16,11 +16,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Copy Repository
-        run: |
-          cp -r ${{ github.workspace }}/* ${{ runner.temp }}/repo
-        shell: pwsh
-
       - name: Cache Python Dependencies
         uses: actions/cache@v2
         with:
@@ -34,22 +29,28 @@ jobs:
 
       - name: Create and Activate Python Virtual Environment
         run: |
-          python -m venv ${{ runner.temp }}/venv
-          ${{ runner.temp }}/venv/Scripts/Activate
+          python -m venv venv
+          .\venv\Scripts\Activate
           python -m pip install --upgrade pip
         shell: pwsh
 
       - name: Install Dependencies
-        run: pip install pyqt5 -r ${{ runner.temp }}/repo/requirements.txt cx_Freeze vispy
+        run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Build Application
-        run: python ${{ runner.temp }}/repo/src/setup.py build
+        run: python ${{ github.workspace }}/src/setup.py build
+        shell: pwsh
+
+      - name: Copy Repository
+        run: |
+          Get-ChildItem -Path ${{ github.workspace }}/GenEvolve3D/* | Copy-Item -Destination ${{ runner.temp }}/repo -Recurse -Force
         shell: pwsh
 
       - name: Package Executable
         run: |
-          $buildPath = "${{ runner.temp }}/repo/src/build/exe.win-amd64-3.9"
+          .\venv\Scripts\Activate
+          $buildPath = "${{ github.workspace }}/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
           Write-Host "Contents of ${buildPath}:"
@@ -76,7 +77,7 @@ jobs:
       - name: Create and Upload Installer
         run: |
           Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ runner.temp }}/repo/.github/workflows/installer.nsi"
+          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
