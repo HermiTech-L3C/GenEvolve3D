@@ -38,19 +38,18 @@ jobs:
         run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
-      - name: Build Application
-        run: python ${{ github.workspace }}/src/setup.py build
+      - name: Copy Repository to Temp
+        run: Get-ChildItem -Path D:\a\GenEvolve3D\GenEvolve3D\* | Copy-Item -Destination D:\a\_temp/repo -Recurse -Force
         shell: pwsh
 
-      - name: Copy Repository
-        run: |
-          Get-ChildItem -Path ${{ github.workspace }}/GenEvolve3D/* | Copy-Item -Destination ${{ runner.temp }}/repo -Recurse -Force
+      - name: Build Application
+        run: python ${{ github.workspace }}/repo/src/setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
           .\venv\Scripts\Activate
-          $buildPath = "${{ github.workspace }}/src/build/exe.win-amd64-3.9"
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
           Write-Host "Contents of ${buildPath}:"
@@ -74,10 +73,10 @@ jobs:
           name: GenEvolve3D
           path: GenEvolve3D.zip
 
-      - name: Create and Upload Installer
+      - name: Update NSIS Script
         run: |
           Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
+          $nsisScriptPath = "${{ github.workspace }}/repo/.github/workflows/installer.nsi"
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
@@ -91,7 +90,7 @@ jobs:
         shell: pwsh
 
       - name: Upload Installer
-        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
+        if: Test-Path "${{ github.workspace }}/repo/GenEvolve3D-Setup.exe"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
