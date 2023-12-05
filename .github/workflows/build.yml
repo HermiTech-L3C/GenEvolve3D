@@ -57,7 +57,7 @@ jobs:
 
           # Debugging: Print the contents of the buildPath
           Write-Host ("Contents of ${buildPath}:")
-          Get-ChildItem $buildPath
+          Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
 
           if (Test-Path $executablePath) {
             # Copy executable to the installation directory
@@ -65,7 +65,7 @@ jobs:
 
             # Debugging: Print the contents of the installation directory
             Write-Host ("Contents of ${installDir}:")
-            Get-ChildItem $installDir
+            Get-ChildItem -Path $installDir
 
             # Compress the installation directory
             Compress-Archive -Path "${installDir}\*" -DestinationPath "GenEvolve3D.zip"
