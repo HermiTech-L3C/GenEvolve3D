@@ -56,23 +56,23 @@ jobs:
           $installDir = "$env:PROGRAMFILES\GenEvolve3D"
 
           # Debugging: Print the contents of the buildPath
-          echo "Contents of $buildPath:"
+          Write-Host "Contents of $buildPath:"
           Get-ChildItem $buildPath
 
           if (Test-Path $executablePath) {
-            # Copy executable to the installation directory
-            Copy-Item $executablePath -Destination $installDir -Force
+              # Copy executable to the installation directory
+              Copy-Item $executablePath -Destination $installDir -Force
 
-            # Debugging: Print the contents of the installation directory
-            echo "Contents of $installDir:"
-            Get-ChildItem $installDir
+              # Debugging: Print the contents of the installation directory
+              Write-Host "Contents of $installDir:"
+              Get-ChildItem $installDir
 
-            # Compress the installation directory
-            Compress-Archive -Path $installDir\* -DestinationPath "GenEvolve3D.zip"
-            echo "Executable packaged successfully."
+              # Compress the installation directory
+              Compress-Archive -Path $installDir\* -DestinationPath "GenEvolve3D.zip"
+              Write-Host "Executable packaged successfully."
           } else {
-            echo "Executable not found at $executablePath. Exiting..."
-            exit 1
+              Write-Host "Executable not found at $executablePath. Exiting..."
+              exit 1
           }
         shell: pwsh
 
