@@ -52,13 +52,26 @@ jobs:
           # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
-          if (Test-Path "$buildPath/GenEvolve3D.exe") {
+          $executablePath = Join-Path $buildPath 'GenEvolve3D.exe'
+          $installDir = "$env:PROGRAMFILES\GenEvolve3D"
+
+          # Debugging: Print the contents of the buildPath
+          echo "Contents of $buildPath:"
+          Get-ChildItem $buildPath
+
+          if (Test-Path $executablePath) {
             # Copy executable to the installation directory
-            Copy-Item "$buildPath/GenEvolve3D.exe" -Destination "$PROGRAMFILES\GenEvolve3D" -Force
-            Compress-Archive -Path "$PROGRAMFILES/GenEvolve3D/*" -DestinationPath "GenEvolve3D.zip"
+            Copy-Item $executablePath -Destination $installDir -Force
+
+            # Debugging: Print the contents of the installation directory
+            echo "Contents of $installDir:"
+            Get-ChildItem $installDir
+
+            # Compress the installation directory
+            Compress-Archive -Path $installDir\* -DestinationPath "GenEvolve3D.zip"
             echo "Executable packaged successfully."
           } else {
-            echo "Executable not found. Exiting..."
+            echo "Executable not found at $executablePath. Exiting..."
             exit 1
           }
         shell: pwsh
