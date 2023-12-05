@@ -70,8 +70,13 @@ jobs:
             Write-Host ("Contents of ${installDir}:")
             Get-ChildItem -Path $installDir
 
+            # Debugging: Print the contents of the zip file
+            $zipPath = "${installDir}\GenEvolve3D.zip"
+            Write-Host ("Contents of ${zipPath}:")
+            Get-ChildItem -Path $zipPath
+
             # Compress the installation directory
-            Compress-Archive -Path "${installDir}\*" -DestinationPath "GenEvolve3D.zip"
+            Compress-Archive -Path "${installDir}\*" -DestinationPath "${installDir}\GenEvolve3D.zip"
             Write-Host "Executable packaged successfully."
           } else {
             Write-Host ("Executable not found at ${executablePath}. Exiting...")
@@ -87,9 +92,6 @@ jobs:
 
       - name: Create and Upload Installer
         run: |
-          # Change to the source directory
-          cd ${{ github.workspace }}/src
-
           # Create installer using NSIS and upload
           makensis .github/workflows/installer.nsi
           mv GenEvolve3D-Setup.exe GenEvolve3D-Installer.exe
