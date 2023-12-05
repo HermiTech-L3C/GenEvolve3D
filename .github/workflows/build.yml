@@ -33,6 +33,11 @@ jobs:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
+      - name: Install cx_Freeze
+        run: |
+          pip install cx_Freeze
+        shell: pwsh
+
       - name: Build Application
         run: |
           cd ${{ github.workspace }}/src
