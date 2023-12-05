@@ -2,9 +2,11 @@ name: Build and Package GenEvolve3D Application
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build-and-package:
@@ -63,13 +65,14 @@ jobs:
           name: GenEvolve3D
           path: GenEvolve3D.zip
 
-      - name: Create Installer
+      - name: Create and Upload Installer
         run: |
           makensis .github/workflows/installer.nsi
+          mv GenEvolve3D-Setup.exe GenEvolve3D-Installer.exe
         shell: pwsh
 
       - name: Upload Installer
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: GenEvolve3D-Setup.exe
+          path: GenEvolve3D-Installer.exe
