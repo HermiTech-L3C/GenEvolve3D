@@ -25,14 +25,17 @@ jobs:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Install Dependencies and Build Application
+      - name: Install Dependencies
         run: |
           python -m venv venv
           & venv/Scripts/Activate
           python -m pip install --upgrade pip
-          pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
-          echo "from cx_Freeze import setup, Executable" > setup.py
-          echo "setup(name='GenEvolve3D', version='0.1', description='GenEvolve3D Application', executables=[Executable('src/main.py')])" >> setup.py
+          pip install numpy pyface traits mayavi vtk pythreejs
+        shell: pwsh
+
+      - name: Build Application with cx_Freeze
+        run: |
+          & venv/Scripts/Activate
           python setup.py build
         shell: pwsh
 
