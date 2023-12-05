@@ -11,9 +11,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -24,9 +21,12 @@ jobs:
           python -m venv venv
           .\venv\Scripts\Activate
           python -m pip install --upgrade pip
-          cd ${{ github.workspace }}  # Change to the repository directory
+          cd ${{ github.workspace }}
           pip install -r requirements.txt cx_Freeze pyqt5
         shell: pwsh
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Cache Python Dependencies
         uses: actions/cache@v2
@@ -36,7 +36,8 @@ jobs:
 
       - name: Build Application
         run: |
-          cd src
+          cd ${{ github.workspace }}/src
+          .\venv\Scripts\Activate
           python setup.py build
         shell: pwsh
 
