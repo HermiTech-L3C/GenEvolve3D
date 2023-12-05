@@ -1,7 +1,3 @@
 numpy>=1.23.0
-pyface>=7.4.0
-traits>=7.0.0
-mayavi>=4.9.0
-vtk>=9.1.0
 pyqt5
-pythreejs
+vispy
