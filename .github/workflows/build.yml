@@ -13,13 +13,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      REPO_PATH: "${{ github.workspace }}/repo"
-      SRC_PATH: "${{ env.REPO_PATH }}/src"
-      BUILD_PATH: "${{ env.SRC_PATH }}/build/exe.win-amd64-3.9"
-      EXECUTABLE_PATH: "${{ env.BUILD_PATH }}/main.exe"
-      TARGET_PATH: "${{ github.workspace }}/GenEvolve3D"
-      NSIS_SCRIPT_PATH: "${{ github.workspace }}/.github/workflows/installer.nsi"
-      PYTHON_LOCATION: "C:\hostedtoolcache\windows\Python\3.9.13\x64"
+      BUILD_DIR: ${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9
+      EXECUTABLE_PATH: ${{ github.workspace }}/GenEvolve3D/main.exe
 
     steps:
       - name: Checkout Repository
@@ -45,19 +40,22 @@ jobs:
 
       - name: Prepare Build Environment
         run: |
+          $repoPath = "${{ github.workspace }}/repo"
+          $srcPath = "${repoPath}/src"
+          $buildPath = "${srcPath}/build/exe.win-amd64-3.9"
           # Ensure the necessary directory structure exists
-          if (-not (Test-Path $env.SRC_PATH)) {
+          if (-not (Test-Path $srcPath)) {
             Write-Host "Creating 'src' directory..."
-            New-Item -ItemType Directory -Path $env.SRC_PATH -Force
+            New-Item -ItemType Directory -Path $srcPath -Force
           }
-          if (-not (Test-Path $env.BUILD_PATH)) {
+          if (-not (Test-Path $buildPath)) {
             Write-Host "Creating 'build/exe.win-amd64-3.9' directory..."
-            New-Item -ItemType Directory -Path $env.BUILD_PATH -Force
+            New-Item -ItemType Directory -Path $buildPath -Force
           }
           # Copy the repository contents to the src directory
           Write-Host "Copying repository contents to 'src' directory..."
-          Get-ChildItem -Recurse "${env.REPO_PATH}/." | ForEach-Object {
-            $targetPath = $_.FullName -replace [regex]::Escape($env.REPO_PATH), $env.SRC_PATH
+          Get-ChildItem -Recurse "${repoPath}/." | ForEach-Object {
+            $targetPath = $_.FullName -replace [regex]::Escape($repoPath), $srcPath
             if (-not (Test-Path $targetPath)) {
               Copy-Item -Path $_.FullName -Destination $targetPath -Force
             }
@@ -69,49 +67,57 @@ jobs:
         shell: pwsh
 
       - name: Build Application
+        run: python ${{ github.workspace }}/src/setup.py build
+        shell: pwsh
+
+      - name: Set Executable Path
         run: |
-          python ${{ github.workspace }}/src/setup.py build
-          Write-Host "Contents of $env.BUILD_PATH:"
-          Get-ChildItem -Path $env.BUILD_PATH -Recurse
+          $env:EXECUTABLE_PATH = Join-Path $env:BUILD_DIR 'main.exe'
         shell: pwsh
 
       - name: Copy Executable
         run: |
-          Write-Host "Checking for executable at: $env.EXECUTABLE_PATH"
-          # Use $env.BUILD_PATH in the path to check for the executable
-          if (Test-Path $env.EXECUTABLE_PATH) {
-            Write-Host "Executable found at $env.EXECUTABLE_PATH"
-            Copy-Item $env.EXECUTABLE_PATH -Destination $env.TARGET_PATH -Force
+          Write-Host "Checking for executable at: $env:EXECUTABLE_PATH"
+          # Use $env:BUILD_DIR in the path to check for the executable
+          if (Test-Path $env:EXECUTABLE_PATH) {
+            Write-Host "Executable found at $env:EXECUTABLE_PATH"
+            Copy-Item $env:EXECUTABLE_PATH -Destination $env:GITHUB_WORKSPACE/GenEvolve3D -Force
           } else {
-            Write-Host "Executable not found at $env.EXECUTABLE_PATH. Exiting..."
+            Write-Host "Executable not found at $env:EXECUTABLE_PATH. Exiting..."
             exit 1
           }
         shell: pwsh
 
       - name: Upload Packaged Application
-        if: Test-Path "${{ github.workspace }}/GenEvolve3D.zip"
+        if: success()
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D
-          path: GenEvolve3D.zip
+          path: GenEvolve3D
+
+      - name: Persist Executable Path
+        if: success()
+        run: echo "EXECUTABLE_PATH=${{ env.EXECUTABLE_PATH }}" >> $GITHUB_ENV
 
       - name: Create and Upload Installer
+        if: success()
         run: |
           Write-Output "Updating NSIS script"
-          if (Test-Path $env.NSIS_SCRIPT_PATH) {
-            (Get-Content $env.NSIS_SCRIPT_PATH) | ForEach-Object {
+          $nsisScriptPath = "${{ github.workspace }}/.github/workflows/installer.nsi"
+          if (Test-Path $nsisScriptPath) {
+            (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
-            } | Set-Content $env.NSIS_SCRIPT_PATH
+            } | Set-Content $nsisScriptPath
             Write-Output "Running NSIS to create installer"
-            Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $env.NSIS_SCRIPT_PATH -Wait
+            Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
           } else {
-            Write-Output "NSIS script not found at $env.NSIS_SCRIPT_PATH. Exiting..."
+            Write-Output "NSIS script not found at ${nsisScriptPath}. Exiting..."
             exit 1
           }
         shell: pwsh
 
       - name: Upload Installer
-        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
+        if: success()
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
