@@ -53,7 +53,9 @@ jobs:
           .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
           if (Test-Path "$buildPath/GenEvolve3D.exe") {
-            Compress-Archive -Path "$buildPath/*" -DestinationPath "GenEvolve3D.zip"
+            # Copy executable to the installation directory
+            Copy-Item "$buildPath/GenEvolve3D.exe" -Destination "$PROGRAMFILES\GenEvolve3D" -Force
+            Compress-Archive -Path "$PROGRAMFILES/GenEvolve3D/*" -DestinationPath "GenEvolve3D.zip"
             echo "Executable packaged successfully."
           } else {
             echo "Executable not found. Exiting..."
