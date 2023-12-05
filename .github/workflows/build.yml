@@ -40,14 +40,17 @@ jobs:
 
       - name: Build Application
         run: |
-          cd ${{ github.workspace }}/repo/src
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
+          if (-not (Test-Path $buildPath)) {
+            New-Item -ItemType Directory -Path $buildPath -Force
+          }
+          cd "${{ github.workspace }}/repo/src"
           python setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
           .\venv\Scripts\Activate
-          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
           Write-Host "Contents of ${buildPath}:"
