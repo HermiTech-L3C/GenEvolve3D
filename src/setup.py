@@ -1,26 +1,42 @@
 from cx_Freeze import setup, Executable
+import sys
 
-# Specify the list of required packages
-packages = ["numpy", "pyface", "traits", "mayavi", "vtk", "pythreejs"]
+# Define the base for the executable
+base = None
+if sys.platform == "win32":
+    base = "Win32GUI"
 
-# Additional non-Python files that might be needed (modify as required)
-include_files = ['evolution.py', 'evolution_gui.py']  # Include other necessary files
+# List of required packages
+required_packages = [
+    "numpy",
+    "pyface",
+    "traits",
+    "mayavi",
+    "vtk",
+    "pythreejs"
+]
+
+# Additional non-Python files that are needed
+additional_files = [
+    'evolution.py',
+    'evolution_gui.py'
+    # Add other necessary files here
+]
 
 # Build options for cx_Freeze
-build_exe_options = {
-    "packages": packages,
-    "include_files": include_files
+build_options = {
+    "packages": required_packages,
+    "include_files": additional_files
 }
 
-# Specify the path to your main.py relative to the script location
-# In this case, it assumes main.py is in the same directory as setup.py
+# Define the main script
 main_script = "main.py"
 
 # Setup script for building the executable
 setup(
     name="GenEvolve3D",
     version="0.1",
-    description="GenEvolve3D Application",
-    options={"build_exe": build_exe_options},
-    executables=[Executable(main_script, base=None)]
+    description="A 3D Genetic Algorithm Visualization Tool",
+    options={"build_exe": build_options},
+    executables=[Executable(main_script, base=base)]
 )
