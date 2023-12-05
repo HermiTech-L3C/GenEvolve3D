@@ -1,5 +1,3 @@
-# evolution.py
-
 import random
 import copy
 
@@ -20,8 +18,8 @@ class Gene:
         self.sink_pos = Position()
         self.activity = abs(weight)
 
-    def mutate(self):
-        self.weight += random.uniform(-0.1, 0.1)
+    def mutate(self, mutation_strength=0.1):
+        self.weight += random.uniform(-mutation_strength, mutation_strength)
         self.activity = abs(self.weight)
 
 class Genome:
@@ -40,18 +38,19 @@ class Individual:
         self.genome = genome
         self.fitness = 0
 
-    def evaluate_fitness(self):
-        self.fitness = random.uniform(0, 10)
+    def evaluate_fitness(self, fitness_function):
+        self.fitness = fitness_function(self.genome)
 
-    def mutate(self):
+    def mutate(self, mutation_strength=0.1):
         if self.genome.genes:
             gene_to_mutate = random.choice(self.genome.genes)
-            gene_to_mutate.mutate()
+            gene_to_mutate.mutate(mutation_strength)
 
 class Evolution:
-    def __init__(self, population_size, mutation_rate=0.1):
+    def __init__(self, population_size, mutation_rate=0.1, fitness_function=None):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
+        self.fitness_function = fitness_function or (lambda genome: random.uniform(0, 10))
         self.population = [Individual(self._random_genome()) for _ in range(population_size)]
         self.generation = 0
         self.average_fitness = 0
@@ -61,7 +60,7 @@ class Evolution:
 
     def run_generation(self):
         for individual in self.population:
-            individual.evaluate_fitness()
+            individual.evaluate_fitness(self.fitness_function)
         self._update_population()
 
     def _update_population(self):
