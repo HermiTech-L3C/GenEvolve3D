@@ -32,7 +32,7 @@ jobs:
 
       - name: Activate Virtual Environment and Install Dependencies
         run: |
-          . ${{ env.VENV_PATH }}\Scripts\Activate
+          . ${{ env.VENV_PATH }}/Scripts/Activate
           python -m pip install --upgrade pip
           pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
         shell: pwsh  # Stick with PowerShell for Windows runner
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Executable with cx_Freeze
         run: |
-          . ${{ env.VENV_PATH }}\Scripts\Activate
+          . ${{ env.VENV_PATH }}/Scripts/Activate
           python setup.py build
         shell: pwsh  # Stick with PowerShell for Windows runner
 
