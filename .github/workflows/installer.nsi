@@ -20,11 +20,11 @@ Section "Install"
     SetOutPath "$INSTDIR"
     
     ; Copy executable
-    File "$INSTDIR\GenEvolve3D.exe" ; Ensure this executable is in the same directory as the NSIS script
+    File "$INSTDIR\main.exe" ; Update the executable name
     
     ; Create program shortcuts
     CreateDirectory "$SMPROGRAMS\GenEvolve3D"
-    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\GenEvolve3D.exe"
+    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\main.exe" ; Update the executable name
     
     ; Write uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -32,7 +32,7 @@ SectionEnd
 
 Section "Uninstall"
     ; Remove installed files
-    Delete "$INSTDIR\GenEvolve3D.exe"
+    Delete "$INSTDIR\main.exe" ; Update the executable name
     Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"
     Delete "$INSTDIR\Uninstall.exe"
     
