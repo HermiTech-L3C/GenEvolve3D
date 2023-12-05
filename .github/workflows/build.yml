@@ -1,4 +1,4 @@
-name: Build and Package GenEvolve3D Application with Docker
+name: Build and Package GenEvolve3D Application
 
 on:
   push:
@@ -7,44 +7,73 @@ on:
     branches: [main]
 
 jobs:
-  docker-build-and-package:
+  build-and-package:
     runs-on: windows-latest
-
     env:
-      DOCKER_IMAGE_NAME: genevolve3d
-      DOCKER_IMAGE_TAG: latest
+      PYTHON_VERSION: '3.9'
+      VENV_PATH: D:\a\GenEvolve3D\GenEvolve3D\venv
+      PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
+      INSTALLER_NAME: GenEvolve3D-Installer
+      EXECUTABLE_NAME: GenEvolve3D
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Convert Repository Name to Lowercase
-        run: echo "DOCKER_IMAGE_NAME_LOWER=$(echo $DOCKER_IMAGE_NAME | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-      - name: Build Docker Image
-        run: docker build -t genevolve3d:latest .
-        if: success()
-
-      - name: Run Application in Docker Container
-        run: docker run --name genevolve3d genevolve3d:latest
-        if: success()
-
-      # Optional: Push the Docker image to a registry like Docker Hub or GitHub Container Registry
-      - name: Log in to Docker Hub
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: docker/login-action@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Push Docker Image to Registry
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: docker push genevolve3d:latest
+      - name: Create Virtual Environment
+        run: python -m venv ${{ env.VENV_PATH }}
+        shell: pwsh
 
-      # Optional: Cache Docker layers for faster builds
-      - name: Cache Docker Layers
-        if: success()
-        uses: actions/cache@v2
+      - name: Activate Virtual Environment and Install Dependencies
+        run: |
+          . ${{ env.VENV_PATH }}\Scripts\Activate
+          python -m pip install --upgrade pip
+          pip install numpy pyface traits mayavi vtk pyinstaller pythreejs
+        shell: pwsh
+
+      - name: Install Build Tools and NSIS
+        run: |
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          choco install nsis -y
+        shell: pwsh
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath ${{ github.workspace }} $env:PYTHON_PATH\main.py `
+          --hidden-import traitsui --hidden-import pyface.ui.null `
+          --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
+          --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4
+          --add-data $env:PYTHON_PATH\evolution.py;evolution `
+          --add-data $env:PYTHON_PATH\evolution_pythreejs.py;evolution_pythreejs
+        shell: pwsh
+
+      - name: Verify Executable Creation
+        run: |
+          if (Test-Path "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe") {
+            echo "Executable found."
+          } else {
+            echo "Executable not found. Exiting..."
+            exit 1
+          }
+        shell: pwsh
+
+      - name: Copy Executable to NSIS Script Location
+        run: |
+          Copy-Item "${{ github.workspace }}/${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}/.github/workflows/"
+        shell: pwsh
+
+      - name: Package Executable as Installer
+        run: |
+          makensis ${{ github.workspace }}/.github/workflows/installer.nsi
+        shell: cmd
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v2
         with:
-          path: ~/.docker
-          key: docker-layers-${{ runner.os }}-${{ hashFiles('**/Dockerfile') }}
+          name: ${{ env.INSTALLER_NAME }}
+          path: ${{ github.workspace }}/.github/workflows/${{ env.EXECUTABLE_NAME }}-Setup.exe
