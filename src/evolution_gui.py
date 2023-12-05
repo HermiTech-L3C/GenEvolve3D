@@ -1,50 +1,6 @@
 import random
 import pythreejs as three
-
-class Position:
-    def __init__(self):
-        self.x = random.uniform(-0.8, 0.8)
-        self.y = random.uniform(-0.8, 0.8)
-        self.z = random.uniform(-0.8, 0.8)
-
-class Gene:
-    def __init__(self, source_type, source_num, sink_type, sink_num, weight):
-        self.source_type = source_type
-        self.source_num = source_num
-        self.sink_type = sink_type
-        self.sink_num = sink_num
-        self.weight = weight
-        self.source_pos = Position()
-        self.sink_pos = Position()
-        self.activity = abs(weight)
-
-    def mutate(self):
-        self.weight += random.uniform(-0.1, 0.1)
-        self.activity = abs(self.weight)
-
-class Genome:
-    def __init__(self, genes=None):
-        self.genes = genes if genes is not None else []
-
-    def add_connection(self, source_type, source_num, sink_type, sink_num, weight):
-        new_gene = Gene(source_type, source_num, sink_type, sink_num, weight)
-        self.genes.append(new_gene)
-
-    def deep_copy(self):
-        return copy.deepcopy(self)
-
-class Individual:
-    def __init__(self, genome):
-        self.genome = genome
-        self.fitness = 0
-
-    def evaluate_fitness(self):
-        self.fitness = random.uniform(0, 10)
-
-    def mutate(self):
-        if self.genome.genes:
-            gene_to_mutate = random.choice(self.genome.genes)
-            gene_to_mutate.mutate()
+from evolution import Gene, Genome, Individual, Position
 
 class EvolutionPyThreejs:
     def __init__(self, population_size, mutation_rate=0.1):
@@ -90,6 +46,7 @@ class EvolutionPyThreejs:
         new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
 
+    # Visualization methods
     def draw_gene_network(self):
         for gene in self.population[0].genome.genes:
             self.draw_node(gene.source_pos, gene.activity)
@@ -97,21 +54,26 @@ class EvolutionPyThreejs:
             self.draw_connection(gene.source_pos, gene.sink_pos)
 
     def draw_node(self, position, activity):
+        # Improved node visualization
+        color = 'red' if activity > 0.5 else 'green'
         geometry = three.SphereBufferGeometry(radius=activity * 0.1, widthSegments=32, heightSegments=32)
-        material = three.MeshBasicMaterial(color='red')
+        material = three.MeshBasicMaterial(color=color)
         sphere = three.Mesh(geometry=geometry, material=material)
-        sphere.position = position
+        sphere.position = [position.x, position.y, position.z]
         self.scene.add(sphere)
 
     def draw_connection(self, source_pos, sink_pos):
+        # Improved connection visualization
+        color = 'blue' if abs(source_pos.x - sink_pos.x) > 0.5 else 'yellow'
         line = three.Line(
             geometry=three.BufferGeometry(attributes={
-                "position": three.BufferAttribute(array=[source_pos, sink_pos], itemSize=3),
+                "position": three.BufferAttribute(array=[[source_pos.x, source_pos.y, source_pos.z], [sink_pos.x, sink_pos.y, sink_pos.z]], itemSize=3),
             }),
-            material=three.LineBasicMaterial(color='blue')
+            material=three.LineBasicMaterial(color=color)
         )
         self.scene.add(line)
 
+    # Running the visualization
     def run(self):
         self.controls.autoRotate = True
         self.controls.autoRotateSpeed = 3.0
@@ -127,3 +89,4 @@ class EvolutionPyThreejs:
 
     def render(self):
         self.renderer.render(self.scene, self.camera)
+
