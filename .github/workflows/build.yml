@@ -73,7 +73,7 @@ jobs:
             # Debugging: Print the contents of the zip file
             $zipPath = "${installDir}\GenEvolve3D.zip"
             Write-Host ("Contents of ${zipPath}:")
-            Get-ChildItem -Path $zipPath
+            Get-ChildItem -Path "${installDir}\*.zip"
 
             # Compress the installation directory
             Compress-Archive -Path "${installDir}\*" -DestinationPath "${installDir}\GenEvolve3D.zip"
@@ -90,6 +90,12 @@ jobs:
           name: GenEvolve3D
           path: GenEvolve3D.zip
 
+      - name: Update Installer Script
+        run: |
+          # Update the NSIS installer script with the correct executable name
+          (Get-Content .github/workflows/installer.nsi) -replace 'GenEvolve3D.exe', 'main.exe' | Set-Content .github/workflows/installer.nsi
+        shell: pwsh
+
       - name: Create and Upload Installer
         run: |
           # Create installer using NSIS and upload
@@ -102,4 +108,3 @@ jobs:
         with:
           name: GenEvolve3D-Installer
           path: GenEvolve3D-Installer.exe
-
