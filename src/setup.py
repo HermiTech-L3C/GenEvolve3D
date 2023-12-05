@@ -2,25 +2,20 @@ from cx_Freeze import setup, Executable
 import sys
 
 # Define the base for the executable
-base = None
-if sys.platform == "win32":
-    base = "Win32GUI"
+base = "Win32GUI" if sys.platform == "win32" else None
 
 # List of required packages
 required_packages = [
     "numpy",
-    "pyface",
-    "traits",
-    "mayavi",
-    "vtk",
-    "pythreejs"
+    "pyqt5",
+    "vispy"
 ]
 
 # Additional non-Python files that are needed
 additional_files = [
     'evolution.py',
     'evolution_gui.py'
-    # Add other necessary files here
+    # Add other necessary files here, like images, data files, etc.
 ]
 
 # Build options for cx_Freeze
