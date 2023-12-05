@@ -21,7 +21,7 @@ jobs:
         with:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -78,7 +78,7 @@ jobs:
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
 
           Write-Host "Contents of ${buildPath}:"
-          Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
+          Get-ChildItem -Path $buildPath -Recurse
 
           if (Test-Path $executablePath) {
             Copy-Item $executablePath -Destination $installDir -Force
