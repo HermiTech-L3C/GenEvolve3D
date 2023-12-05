@@ -34,24 +34,39 @@ jobs:
           python -m pip install --upgrade pip
         shell: pwsh
 
+      - name: Prepare Build Environment
+        run: |
+          $repoPath = "${{ github.workspace }}/repo"
+          $srcPath = "${repoPath}/src"
+          $buildPath = "${srcPath}/build/exe.win-amd64-3.9"
+
+          # Ensure the necessary directory structure exists
+          if (-not (Test-Path $srcPath)) {
+            Write-Host "Creating 'src' directory..."
+            New-Item -ItemType Directory -Path $srcPath -Force
+          }
+
+          if (-not (Test-Path $buildPath)) {
+            Write-Host "Creating 'build/exe.win-amd64-3.9' directory..."
+            New-Item -ItemType Directory -Path $buildPath -Force
+          }
+
+          # Copy the repository contents to the src directory
+          Write-Host "Copying repository contents to 'src' directory..."
+          Copy-Item -Recurse -Force "${repoPath}/." $srcPath
+        shell: pwsh
+
       - name: Install Dependencies
         run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Build Application
-        run: |
-          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
-          if (-not (Test-Path $buildPath)) {
-            New-Item -ItemType Directory -Path $buildPath -Force
-          }
-          Set-Location "${{ github.workspace }}/repo/src"
-          python setup.py build
+        run: python ${{ github.workspace }}/src/setup.py build
         shell: pwsh
 
       - name: Package Executable
         run: |
           .\venv\Scripts\Activate
-          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
           Write-Host "Contents of ${buildPath}:"
