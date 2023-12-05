@@ -97,7 +97,7 @@ jobs:
       - name: Create and Upload Installer
         run: |
           Write-Output "Updating NSIS script"
-          $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
+          $nsisScriptPath = "${{ github.workspace }}/src/installer.nsi"
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
@@ -111,8 +111,8 @@ jobs:
         shell: pwsh
 
       - name: Upload Installer
-        if: Test-Path "${{ github.workspace }}/GenEvolve3D-Setup.exe"
+        if: Test-Path "${{ github.workspace }}/src/build/exe.win-amd64-3.9/GenEvolve3D-Setup.exe"
         uses: actions/upload-artifact@v2
         with:
           name: GenEvolve3D-Installer
-          path: GenEvolve3D-Setup.exe
+          path: src/build/exe.win-amd64-3.9/GenEvolve3D-Setup.exe
