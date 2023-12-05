@@ -11,12 +11,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Clean Workspace
-        run: |
-          Remove-Item * -Force
-          Remove-Item src -Recurse -Force
-          New-Item -ItemType Directory -Name src
-
       - name: Checkout Repository
         uses: actions/checkout@v2
 
@@ -32,27 +26,18 @@ jobs:
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
       - name: Install Dependencies
+        # Create virtual environment, upgrade pip, and install dependencies
         run: |
-          # Create virtual environment
           python -m venv venv
           .\venv\Scripts\Activate
-
-          # Upgrade pip and install dependencies
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-          # Install cx_Freeze and pyqt5
           pip install cx_Freeze pyqt5
-        shell: pwsh
-
-      - name: Install pyqt5
-        run: |
-          .\venv\Scripts\Activate
-          pip install pyqt5
         shell: pwsh
 
       - name: Build Application with cx_Freeze
         run: |
+          # Activate virtual environment and build the application
           .\venv\Scripts\Activate
           cd src
           python setup.py build
@@ -60,6 +45,7 @@ jobs:
 
       - name: Package Executable
         run: |
+          # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
           $buildPath = 'build/exe.win-amd64-3.9'
           if (Test-Path "$buildPath/GenEvolve3D.exe") {
@@ -79,6 +65,7 @@ jobs:
 
       - name: Create Installer
         run: |
+          # Create NSIS script and generate installer
           $nsiScript = @'
           !include "MUI2.nsh"
           Name "GenEvolve3D"
