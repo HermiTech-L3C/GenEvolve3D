@@ -27,12 +27,19 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: Create and Activate Python Virtual Environment
+        run: |
+          python -m venv venv
+          .\venv\Scripts\Activate
+          python -m pip install --upgrade pip
+        shell: pwsh
+
       - name: Prepare Build Environment
         run: |
           $repoPath = "${{ github.workspace }}/repo"
           $srcPath = "${repoPath}/src"
           $buildPath = "${srcPath}/build/exe.win-amd64-3.9"
-          
+
           # Ensure the necessary directory structure exists
           if (-not (Test-Path $srcPath)) {
             Write-Host "Creating 'src' directory..."
@@ -46,15 +53,20 @@ jobs:
 
           # Copy the repository contents to the src directory
           Write-Host "Copying repository contents to 'src' directory..."
-          Copy-Item -Recurse -Force "${repoPath}/." $srcPath
+          Get-ChildItem -Recurse "${repoPath}" | ForEach-Object {
+            $targetPath = $_.FullName -replace [regex]::Escape($repoPath), $srcPath
+            if (-not (Test-Path $targetPath)) {
+              Copy-Item -Path $_.FullName -Destination $targetPath -Force
+            }
+          }
         shell: pwsh
 
       - name: Install Dependencies
-        run: pip install pyqt5 -r $srcPath/requirements.txt cx_Freeze vispy
+        run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Build Application
-        run: python $srcPath/setup.py build
+        run: python ${{ github.workspace }}/src/setup.py build
         shell: pwsh
 
       - name: Package Executable
