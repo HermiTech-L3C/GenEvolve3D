@@ -1,5 +1,5 @@
 import os
-from evolution_pythreejs import EvolutionPyThreejs
+from evolution_gui import EvolutionPyThreejs
 from evolution import Evolution
 
 # Explicitly set the preferred toolkit before importing GUI modules
