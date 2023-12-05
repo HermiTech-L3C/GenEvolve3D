@@ -1,5 +1,6 @@
 from cx_Freeze import setup, Executable
 import sys
+import os
 
 def get_base():
     return "Win32GUI" if sys.platform == "win32" else None
@@ -12,9 +13,10 @@ def get_required_packages():
     ]
 
 def get_additional_files():
+    src_folder = os.path.join("src", "build", "exe.win-amd64-3.9")  # Adjust the path accordingly
     return [
-        'evolution.py',
-        'evolution_gui.py'
+        os.path.join(src_folder, 'evolution.py'),
+        os.path.join(src_folder, 'evolution_gui.py')
         # Add other necessary files here, like images, data files, etc.
     ]
 
@@ -26,7 +28,7 @@ def build_options():
 
 def create_setup():
     base = get_base()
-    main_script = "main.py"
+    main_script = os.path.join("src", "main.py")  # Adjust the path accordingly
 
     return setup(
         name="GenEvolve3D",
