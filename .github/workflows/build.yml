@@ -27,13 +27,6 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Create and Activate Python Virtual Environment
-        run: |
-          python -m venv venv
-          .\venv\Scripts\Activate
-          python -m pip install --upgrade pip
-        shell: pwsh
-
       - name: Prepare Build Environment
         run: |
           $repoPath = "${{ github.workspace }}/repo"
@@ -57,11 +50,11 @@ jobs:
         shell: pwsh
 
       - name: Install Dependencies
-        run: pip install pyqt5 -r requirements.txt cx_Freeze vispy
+        run: pip install pyqt5 -r $srcPath/requirements.txt cx_Freeze vispy
         shell: pwsh
 
       - name: Build Application
-        run: python ${{ github.workspace }}/src/setup.py build
+        run: python $srcPath/setup.py build
         shell: pwsh
 
       - name: Package Executable
