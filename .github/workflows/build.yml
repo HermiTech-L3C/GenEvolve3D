@@ -45,12 +45,19 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath D:\a\GenEvolve3D\GenEvolve3D $env:PYTHON_PATH\main.py `
+          ls "$env:PYTHON_PATH" # List files for debugging
+          if (Test-Path "$env:PYTHON_PATH\evolution_gui.py") {
+            echo "evolution_gui.py found."
+          } else {
+            echo "evolution_gui.py not found. Exiting..."
+            exit 1
+          }
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME $env:PYTHON_PATH\main.py `
           --hidden-import traitsui --hidden-import pyface.ui.null `
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4 `
-          --add-data "$env:PYTHON_PATH\evolution.py;evolution" `
-          --add-data "$env:PYTHON_PATH\evolution_pythreejs.py;evolution_pythreejs"
+          --add-data "$env:PYTHON_PATH\evolution.py;." `
+          --add-data "$env:PYTHON_PATH\evolution_gui.py;."
         shell: pwsh
 
       - name: Verify Executable Creation
