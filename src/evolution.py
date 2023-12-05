@@ -56,7 +56,10 @@ class Evolution:
         self.average_fitness = 0
 
     def _random_genome(self):
-        return Genome([Gene('type1', 0, 'type2', 1, random.uniform(-1, 1)) for _ in range(random.randint(1, 3))])
+        return Genome([self._random_gene() for _ in range(random.randint(1, 3))])
+
+    def _random_gene(self):
+        return Gene('type1', 0, 'type2', 1, random.uniform(-1, 1))
 
     def run_generation(self):
         for individual in self.population:
@@ -73,10 +76,10 @@ class Evolution:
         next_generation = []
         while len(next_generation) < self.population_size // 2:
             parent1, parent2 = random.sample(self.population, 2)
-            child = Individual(self._crossover(parent1.genome, parent2.genome))
+            child = self._crossover(parent1.genome, parent2.genome)
             if random.random() < self.mutation_rate:
                 child.mutate()
-            next_generation.append(child)
+            next_generation.append(Individual(child))
         return next_generation
 
     def _crossover(self, genome1, genome2):
