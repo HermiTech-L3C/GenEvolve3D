@@ -25,12 +25,12 @@ jobs:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
 
-      - name: Create Virtual Environment and Install Dependencies
+      - name: Install Dependencies
         run: |
           python -m venv venv
           & venv/Scripts/Activate
           python -m pip install --upgrade pip
-          pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
+          pip install numpy pyface traits vtk cx_Freeze pythreejs
         shell: pwsh
 
       - name: Build Application with cx_Freeze
