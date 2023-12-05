@@ -7,7 +7,7 @@ base = "Win32GUI" if sys.platform == "win32" else None
 # List of required packages
 required_packages = [
     "numpy",
-    "pyqt5",
+    "PyQt5",  # Use "PyQt5" instead of "pyqt5"
     "vispy"
 ]
 
