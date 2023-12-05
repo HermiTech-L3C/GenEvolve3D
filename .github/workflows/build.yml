@@ -52,7 +52,7 @@ jobs:
             echo "evolution_gui.py not found. Exiting..."
             exit 1
           }
-          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME $env:PYTHON_PATH\main.py `
+          pyinstaller --onefile --noconsole --paths $env:PYTHON_PATH --name $env:EXECUTABLE_NAME --distpath ${{ github.workspace }}\.github\workflows $env:PYTHON_PATH\main.py `
           --hidden-import traitsui --hidden-import pyface.ui.null `
           --hidden-import traitsui.toolkits --hidden-import pyface.ui.qt4 `
           --hidden-import pyface.toolkits.qt4 --hidden-import traitsui.qt4 `
@@ -62,17 +62,12 @@ jobs:
 
       - name: Verify Executable Creation
         run: |
-          if (Test-Path "${{ github.workspace }}\${{ env.EXECUTABLE_NAME }}.exe") {
+          if (Test-Path "${{ github.workspace }}\.github\workflows\${{ env.EXECUTABLE_NAME }}.exe") {
             echo "Executable found."
           } else {
             echo "Executable not found. Exiting..."
             exit 1
           }
-        shell: pwsh
-
-      - name: Copy Executable to NSIS Script Location
-        run: |
-          Copy-Item "${{ github.workspace }}/${{ env.EXECUTABLE_NAME }}.exe" "${{ github.workspace }}/.github/workflows/"
         shell: pwsh
 
       - name: Package Executable as Installer
