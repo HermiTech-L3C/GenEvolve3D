@@ -69,3 +69,43 @@ jobs:
         with:
           name: ${{ env.EXECUTABLE_NAME }}
           path: ${{ env.EXECUTABLE_NAME }}.zip
+          
+      - name: Package Executable as Installer
+        run: |
+          # Create an NSIS installer script
+          echo "Creating NSIS installer script..."
+          echo '!include "MUI2.nsh"' > installer.nsi
+          echo 'Name "GenEvolve3D"' >> installer.nsi
+          echo 'OutFile "GenEvolve3D-Setup.exe"' >> installer.nsi
+          echo 'InstallDir "$PROGRAMFILES\GenEvolve3D"' >> installer.nsi
+          echo 'ShowInstDetails show' >> installer.nsi
+          echo 'ShowUnInstDetails show' >> installer.nsi
+          echo '!insertmacro MUI_PAGE_WELCOME' >> installer.nsi
+          echo '!insertmacro MUI_PAGE_DIRECTORY' >> installer.nsi
+          echo '!insertmacro MUI_PAGE_INSTFILES' >> installer.nsi
+          echo '!insertmacro MUI_PAGE_FINISH' >> installer.nsi
+          echo '!insertmacro MUI_LANGUAGE "English"' >> installer.nsi
+          echo 'Section "Install"' >> installer.nsi
+          echo '    SetOutPath "$INSTDIR"' >> installer.nsi
+          echo "    File 'build/exe.win-amd64-3.9/${{ env.EXECUTABLE_NAME }}.exe'" >> installer.nsi
+          echo '    CreateDirectory "$SMPROGRAMS\GenEvolve3D"' >> installer.nsi
+          echo '    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"' >> installer.nsi
+          echo '    WriteUninstaller "$INSTDIR\Uninstall.exe"' >> installer.nsi
+          echo 'SectionEnd' >> installer.nsi
+          echo 'Section "Uninstall"' >> installer.nsi
+          echo '    Delete "$INSTDIR\${{ env.EXECUTABLE_NAME }}.exe"' >> installer.nsi
+          echo '    Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"' >> installer.nsi
+          echo '    Delete "$INSTDIR\Uninstall.exe"' >> installer.nsi
+          echo '    RMDir "$SMPROGRAMS\GenEvolve3D"' >> installer.nsi
+          echo '    RMDir "$INSTDIR"' >> installer.nsi
+          echo 'SectionEnd' >> installer.nsi
+
+          # Run NSIS to create the installer
+          makensis installer.nsi
+        shell: cmd
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.INSTALLER_NAME }}
+          path: GenEvolve3D-Setup.exe
