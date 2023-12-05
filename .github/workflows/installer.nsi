@@ -20,11 +20,11 @@ Section "Install"
     SetOutPath "$INSTDIR"
     
     ; Copy executable
-    File "${WORKSPACE}\src\build\exe.win-amd64-3.9\main.exe" ; Adjust the path to the correct location
+    File "main.exe" ; Assuming main.exe is in the same directory as the NSIS script
     
     ; Create program shortcuts
     CreateDirectory "$SMPROGRAMS\GenEvolve3D"
-    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\main.exe" ; Adjust the executable name
+    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\main.exe"
     
     ; Write uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -32,7 +32,7 @@ SectionEnd
 
 Section "Uninstall"
     ; Remove installed files
-    Delete "$INSTDIR\main.exe" ; Adjust the executable name
+    Delete "$INSTDIR\main.exe"
     Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"
     Delete "$INSTDIR\Uninstall.exe"
     
