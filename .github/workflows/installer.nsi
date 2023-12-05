@@ -20,11 +20,11 @@ Section "Install"
     SetOutPath "$INSTDIR"
     
     ; Copy executable
-    File "$INSTDIR\main.exe" ; Update the executable name
+    File "${WORKSPACE}\src\build\exe.win-amd64-3.9\main.exe" ; Adjust the path to the correct location
     
     ; Create program shortcuts
     CreateDirectory "$SMPROGRAMS\GenEvolve3D"
-    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\main.exe" ; Update the executable name
+    CreateShortCut "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk" "$INSTDIR\main.exe" ; Adjust the executable name
     
     ; Write uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -32,7 +32,7 @@ SectionEnd
 
 Section "Uninstall"
     ; Remove installed files
-    Delete "$INSTDIR\main.exe" ; Update the executable name
+    Delete "$INSTDIR\main.exe" ; Adjust the executable name
     Delete "$SMPROGRAMS\GenEvolve3D\GenEvolve3D.lnk"
     Delete "$INSTDIR\Uninstall.exe"
     
