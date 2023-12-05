@@ -21,7 +21,7 @@ jobs:
         with:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -53,7 +53,7 @@ jobs:
 
           # Copy the repository contents to the src directory
           Write-Host "Copying repository contents to 'src' directory..."
-          Get-ChildItem -Recurse "${repoPath}" | ForEach-Object {
+          Get-ChildItem -Recurse "${repoPath}/." | ForEach-Object {
             $targetPath = $_.FullName -replace [regex]::Escape($repoPath), $srcPath
             if (-not (Test-Path $targetPath)) {
               Copy-Item -Path $_.FullName -Destination $targetPath -Force
@@ -72,9 +72,11 @@ jobs:
       - name: Package Executable
         run: |
           .\venv\Scripts\Activate
+          $srcPath = "${{ github.workspace }}/repo/src"
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
-          
+
           Write-Host "Contents of ${buildPath}:"
           Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
 
@@ -101,12 +103,12 @@ jobs:
         run: |
           Write-Output "Updating NSIS script"
           $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
-          
+
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
             } | Set-Content $nsisScriptPath
-            
+
             Write-Output "Running NSIS to create installer"
             Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
           } else {
