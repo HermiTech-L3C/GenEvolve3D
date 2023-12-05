@@ -66,7 +66,11 @@ jobs:
         shell: pwsh
 
       - name: Build Application
-        run: python ${{ github.workspace }}/src/setup.py build
+        run: |
+          python ${{ github.workspace }}/src/setup.py build
+          $buildPath = "${{ github.workspace }}/repo/src/build/exe.win-amd64-3.9"
+          Write-Host "Contents of ${buildPath}:"
+          Get-ChildItem -Path $buildPath -Recurse
         shell: pwsh
 
       - name: Package Executable
@@ -78,10 +82,9 @@ jobs:
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
 
           Write-Host "Contents of ${buildPath}:"
-          Get-ChildItem -Path $buildPath -Recurse
+          Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
 
           if (Test-Path $executablePath) {
-            Write-Host "Executable found at ${executablePath}. Copying..."
             Copy-Item $executablePath -Destination $installDir -Force
             Write-Host "Contents of ${installDir}:"
             Get-ChildItem -Path $installDir
