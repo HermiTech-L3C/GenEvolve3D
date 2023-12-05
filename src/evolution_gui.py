@@ -1,75 +1,129 @@
-# evolution_gui.py
+import random
+import pythreejs as three
 
-import tkinter as tk
-from mayavi import mlab
-from traits.api import HasTraits, Instance
-from traitsui.api import View, Item
-from mayavi.core.ui.api import MlabSceneModel, SceneEditor
-from evolution import Evolution
+class Position:
+    def __init__(self):
+        self.x = random.uniform(-0.8, 0.8)
+        self.y = random.uniform(-0.8, 0.8)
+        self.z = random.uniform(-0.8, 0.8)
 
-class EvolutionGUI(HasTraits):
-    evolution = Instance(Evolution)
-    scene = Instance(MlabSceneModel, ())
+class Gene:
+    def __init__(self, source_type, source_num, sink_type, sink_num, weight):
+        self.source_type = source_type
+        self.source_num = source_num
+        self.sink_type = sink_type
+        self.sink_num = sink_num
+        self.weight = weight
+        self.source_pos = Position()
+        self.sink_pos = Position()
+        self.activity = abs(weight)
 
-    def __init__(self, evolution):
-        super().__init__(evolution=evolution)
-        self.create_widgets()
+    def mutate(self):
+        self.weight += random.uniform(-0.1, 0.1)
+        self.activity = abs(self.weight)
 
-    def create_widgets(self):
-        self.start_button = tk.Button(text="Start Evolution", command=self.start_evolution)
-        self.start_button.pack()
+class Genome:
+    def __init__(self, genes=None):
+        self.genes = genes if genes is not None else []
 
-        self.stop_button = tk.Button(text="Stop Evolution", command=self.stop_evolution, state=tk.DISABLED)
-        self.stop_button.pack()
+    def add_connection(self, source_type, source_num, sink_type, sink_num, weight):
+        new_gene = Gene(source_type, source_num, sink_type, sink_num, weight)
+        self.genes.append(new_gene)
 
-        self.mutation_scale = tk.Scale(from_=0, to=0.2, resolution=0.01, orient=tk.HORIZONTAL, label="Mutation Rate")
-        self.mutation_scale.set(self.evolution.mutation_rate)
-        self.mutation_scale.pack()
+    def deep_copy(self):
+        return copy.deepcopy(self)
 
-        self.status_label = tk.Label(text="Generation: 0\nAverage Fitness: 0.0")
-        self.status_label.pack()
+class Individual:
+    def __init__(self, genome):
+        self.genome = genome
+        self.fitness = 0
 
-        # Create Mayavi scene editor
-        self.view = View(Item('scene', editor=SceneEditor(scene_class=MayaviScene), height=500, width=600, show_label=False))
+    def evaluate_fitness(self):
+        self.fitness = random.uniform(0, 10)
 
-    def start_evolution(self):
-        self.evolution.mutation_rate = self.mutation_scale.get()
-        self.start_button.config(state=tk.DISABLED)
-        self.stop_button.config(state=tk.NORMAL)
-        self.update_status()
+    def mutate(self):
+        if self.genome.genes:
+            gene_to_mutate = random.choice(self.genome.genes)
+            gene_to_mutate.mutate()
 
-    def stop_evolution(self):
-        self.start_button.config(state=tk.NORMAL)
-        self.stop_button.config(state=tk.DISABLED)
+class EvolutionPyThreejs:
+    def __init__(self, population_size, mutation_rate=0.1):
+        self.population_size = population_size
+        self.mutation_rate = mutation_rate
+        self.population = [Individual(self._random_genome()) for _ in range(population_size)]
+        self.generation = 0
+        self.average_fitness = 0
+        self.scene = three.Scene()
+        self.camera = three.PerspectiveCamera(position=[0, 0, 5], aspect=1)
+        self.renderer = three.Renderer(scene=self.scene, camera=self.camera, controls=[three.OrbitControls(self.camera)])
+        self.renderer.width = 800
+        self.renderer.height = 600
+        self.renderer.auto_clear = False
+        self.controls = three.OrbitControls(self.camera)
 
-    def update_status(self):
-        if self.evolution.generation < 100:  # Adjust the number of generations to visualize
-            self.evolution.run_generation()
-            self.scene.mlab.clf()
-            self.draw_gene_network()
-            gen, avg_fit = self.evolution.generation, self.evolution.average_fitness
-            self.status_label.config(text=f"Generation: {gen}\nAverage Fitness: {avg_fit:.2f}")
-            self.scene.mlab.view(azimuth=0, elevation=90)
-            self.scene.mlab.draw()
-            self.scene.mlab.savefig(f'generation_{gen}.png')
-            self.scene.mlab.show()
-            self.scene.mlab.save_camera('camera.npy')
-            self.evolution.generation += 1
+    def _random_genome(self):
+        return Genome([Gene('type1', 0, 'type2', 1, random.uniform(-1, 1)) for _ in range(random.randint(1, 3))])
+
+    def run_generation(self):
+        for individual in self.population:
+            individual.evaluate_fitness()
+        self._update_population()
+
+    def _update_population(self):
+        self.population.sort(key=lambda individual: individual.fitness, reverse=True)
+        self.population = self.population[:self.population_size // 2] + self._create_next_generation()
+        self.generation += 1
+        self.average_fitness = sum(individual.fitness for individual in self.population) / len(self.population)
+
+    def _create_next_generation(self):
+        next_generation = []
+        while len(next_generation) < self.population_size // 2:
+            parent1, parent2 = random.sample(self.population, 2)
+            child = Individual(self._crossover(parent1.genome, parent2.genome))
+            if random.random() < self.mutation_rate:
+                child.mutate()
+            next_generation.append(child)
+        return next_generation
+
+    def _crossover(self, genome1, genome2):
+        gene_split = len(genome1.genes) // 2
+        new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
+        return Genome(new_genes)
 
     def draw_gene_network(self):
-        for gene in self.evolution.population[0].genome.genes:
+        for gene in self.population[0].genome.genes:
             self.draw_node(gene.source_pos, gene.activity)
             self.draw_node(gene.sink_pos, gene.activity)
             self.draw_connection(gene.source_pos, gene.sink_pos)
 
     def draw_node(self, position, activity):
-        mlab.points3d(position[0], position[1], position[2], activity, scale_factor=0.05 * activity, color=(1, 0, 0))
+        geometry = three.SphereBufferGeometry(radius=activity * 0.1, widthSegments=32, heightSegments=32)
+        material = three.MeshBasicMaterial(color='red')
+        sphere = three.Mesh(geometry=geometry, material=material)
+        sphere.position = position
+        self.scene.add(sphere)
 
     def draw_connection(self, source_pos, sink_pos):
-        x = [source_pos[0], sink_pos[0]]
-        y = [source_pos[1], sink_pos[1]]
-        z = [source_pos[2], sink_pos[2]]
-        mlab.plot3d(x, y, z, color=(0, 0, 1), tube_radius=0.01)
+        line = three.Line(
+            geometry=three.BufferGeometry(attributes={
+                "position": three.BufferAttribute(array=[source_pos, sink_pos], itemSize=3),
+            }),
+            material=three.LineBasicMaterial(color='blue')
+        )
+        self.scene.add(line)
 
     def run(self):
-        self.edit_traits(view=self.view)
+        self.controls.autoRotate = True
+        self.controls.autoRotateSpeed = 3.0
+        self.controls.enableDamping = True
+        self.controls.dampingFactor = 0.2
+        self.controls.rotateSpeed = 0.5
+        self.controls.zoomSpeed = 1.2
+        self.controls.addEventListener('change', self.render)
+
+        self.render()
+        self.controls.update()
+        self.renderer
+
+    def render(self):
+        self.renderer.render(self.scene, self.camera)
