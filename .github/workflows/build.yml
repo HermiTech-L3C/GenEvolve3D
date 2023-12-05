@@ -27,8 +27,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          # Create virtual environment
           python -m venv venv
           .\venv\Scripts\Activate
+
+          # Upgrade pip and install dependencies
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install cx_Freeze pyqt5  # Install pyqt5 here
