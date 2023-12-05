@@ -34,7 +34,9 @@ jobs:
           # Upgrade pip and install dependencies
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install cx_Freeze pyqt5  # Install pyqt5 here
+
+          # Install cx_Freeze and pyqt5
+          pip install cx_Freeze pyqt5
         shell: pwsh
 
       - name: Build Application with cx_Freeze
