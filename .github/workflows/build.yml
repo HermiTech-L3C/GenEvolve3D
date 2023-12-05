@@ -21,7 +21,7 @@ jobs:
           python -m venv venv
           .\venv\Scripts\Activate
           python -m pip install --upgrade pip
-          cd ${{ github.workspace }}
+          cd ${{ github.workspace }}/GenEvolve3D
           pip install -r requirements.txt cx_Freeze pyqt5
         shell: pwsh
 
@@ -36,8 +36,7 @@ jobs:
 
       - name: Build Application
         run: |
-          cd ${{ github.workspace }}/src
-          .\venv\Scripts\Activate
+          cd src
           python setup.py build
         shell: pwsh
 
