@@ -21,7 +21,7 @@ jobs:
         with:
           path: ~/AppData/Local/pip/Cache
           key: python-dependencies-${{ hashFiles('**/requirements.txt') }}
-
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -81,6 +81,7 @@ jobs:
           Get-ChildItem -Path $buildPath -Recurse
 
           if (Test-Path $executablePath) {
+            Write-Host "Executable found at ${executablePath}. Copying..."
             Copy-Item $executablePath -Destination $installDir -Force
             Write-Host "Contents of ${installDir}:"
             Get-ChildItem -Path $installDir
