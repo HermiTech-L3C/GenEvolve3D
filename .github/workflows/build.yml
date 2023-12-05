@@ -51,7 +51,7 @@ jobs:
         run: |
           # Activate virtual environment and package the executable
           .\venv\Scripts\Activate
-          $buildPath = 'build\exe.win-amd64-3.9'
+          $buildPath = ${{ github.workspace }}/src/build/exe.win-amd64-3.9
           $executablePath = Join-Path $buildPath 'GenEvolve3D.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
 
