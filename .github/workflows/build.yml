@@ -80,13 +80,14 @@ jobs:
           $executablePath = Join-Path $buildPath 'main.exe'
           $targetPath = "${{ github.workspace }}/GenEvolve3D"
 
-          Write-Host "Copying executable to 'GenEvolve3D' directory..."
+          Write-Host "Checking for executable at: $executablePath"
 
           # Use $srcPath in the path to check for the executable
-          if (Test-Path "$srcPath\build\exe.win-amd64-3.9\main.exe") {
-            Copy-Item "$srcPath\build\exe.win-amd64-3.9\main.exe" -Destination $targetPath -Force
+          if (Test-Path $executablePath) {
+            Write-Host "Executable found at $executablePath"
+            Copy-Item $executablePath -Destination $targetPath -Force
           } else {
-            Write-Host "Executable not found at ${executablePath}. Exiting..."
+            Write-Host "Executable not found at $executablePath. Exiting..."
             exit 1
           }
         shell: pwsh
