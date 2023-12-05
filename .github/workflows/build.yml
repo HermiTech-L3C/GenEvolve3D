@@ -11,11 +11,11 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: 3.9
-      VENV_PATH: D:\a\GenEvolve3D\GenEvolve3D\venv
-      PYTHON_PATH: D:\a\GenEvolve3D\GenEvolve3D\src
+      VENV_PATH: D:/a/GenEvolve3D/GenEvolve3D/venv  # Use forward slashes
+      PYTHON_PATH: D:/a/GenEvolve3D/GenEvolve3D/src  # Use forward slashes
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
-      pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
+      pythonLocation: C:/hostedtoolcache/windows/Python/3.9.13/x64  # Use forward slashes
       DEPENDENCY_CACHE_KEY: 'python-dependencies-${{ hashFiles('**/requirements.txt') }}'
 
     steps:
@@ -28,7 +28,7 @@ jobs:
       - name: Cache Python dependencies
         uses: actions/cache@v2
         with:
-          path: ~\AppData\Local\pip\Cache
+          path: ~/AppData/Local/pip/Cache  # Use forward slashes
           key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
       - run: python -m venv ${{ env.VENV_PATH }}
@@ -68,7 +68,7 @@ jobs:
           path: ${{ env.EXECUTABLE_NAME }}.zip
 
       - run: |
-          $nsi = @"
+          $nsi = @'
           !include "MUI2.nsh"
           Name "GenEvolve3D"
           OutFile "GenEvolve3D-Setup.exe"
@@ -94,7 +94,7 @@ jobs:
               RMDir "$SMPROGRAMS\GenEvolve3D"
               RMDir "$INSTDIR"
           SectionEnd
-          "@
+          '@
           Set-Content -Path installer.nsi -Value $nsi
           makensis installer.nsi
         shell: pwsh
