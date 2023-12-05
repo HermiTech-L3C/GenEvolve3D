@@ -11,12 +11,13 @@ jobs:
     runs-on: windows-latest
     env:
       PYTHON_VERSION: 3.9
-      VENV_PATH: D:/a/GenEvolve3D/GenEvolve3D/venv  # Use forward slashes
-      PYTHON_PATH: D:/a/GenEvolve3D/GenEvolve3D/src  # Use forward slashes
+      VENV_PATH: D:/a/GenEvolve3D/GenEvolve3D/venv
+      PYTHON_PATH: D:/a/GenEvolve3D/GenEvolve3D/src
       INSTALLER_NAME: GenEvolve3D-Installer
       EXECUTABLE_NAME: GenEvolve3D
-      pythonLocation: C:/hostedtoolcache/windows/Python/3.9.13/x64  # Use forward slashes
+      pythonLocation: C:/hostedtoolcache/windows/Python/3.9.13/x64
       DEPENDENCY_CACHE_KEY: 'python-dependencies-${{ hashFiles('**/requirements.txt') }}'
+      ACTIVATE_VENV: '. D:/a/GenEvolve3D/GenEvolve3D/venv/Scripts/Activate'
 
     steps:
       - uses: actions/checkout@v2
@@ -28,38 +29,34 @@ jobs:
       - name: Cache Python dependencies
         uses: actions/cache@v2
         with:
-          path: ~/AppData/Local/pip/Cache  # Use forward slashes
+          path: ~/AppData/Local/pip/Cache
           key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
-      - run: python -m venv ${{ env.VENV_PATH }}
-        shell: pwsh
-
-      - run: |
-          . ${{ env.VENV_PATH }}/Scripts/Activate
+      - name: Setup and Install Dependencies
+        run: |
+          python -m venv ${{ env.VENV_PATH }}
+          ${{ env.ACTIVATE_VENV }}
           python -m pip install --upgrade pip
           pip install numpy pyface traits mayavi vtk cx_Freeze pythreejs
         shell: pwsh
 
-      - run: |
+      - name: Prepare Build Environment
+        run: |
           echo "from cx_Freeze import setup, Executable" > setup.py
           echo "setup(name='${{ env.EXECUTABLE_NAME }}', version='0.1', description='GenEvolve3D Application', executables=[Executable('${{ env.PYTHON_PATH }}/main.py')])" >> setup.py
-        shell: pwsh
-
-      - run: |
-          . ${{ env.VENV_PATH }}/Scripts/Activate
+          ${{ env.ACTIVATE_VENV }}
           python setup.py build
         shell: pwsh
 
-      - run: |
+      - name: Verify and Package Executable
+        run: |
           if (Test-Path "build/exe.win-amd64-3.9/${{ env.EXECUTABLE_NAME }}.exe") {
-            echo "Executable found."
+            echo "Executable found. Packaging..."
+            Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath "${{ env.EXECUTABLE_NAME }}.zip"
           } else {
             echo "Executable not found. Exiting..."
             exit 1
           }
-        shell: pwsh
-
-      - run: Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath "${{ env.EXECUTABLE_NAME }}.zip"
         shell: pwsh
 
       - uses: actions/upload-artifact@v2
@@ -67,8 +64,9 @@ jobs:
           name: ${{ env.EXECUTABLE_NAME }}
           path: ${{ env.EXECUTABLE_NAME }}.zip
 
-      - run: |
-          $nsi = @'
+      - name: Create and Upload Installer
+        run: |
+          $nsiScript = @'
           !include "MUI2.nsh"
           Name "GenEvolve3D"
           OutFile "GenEvolve3D-Setup.exe"
@@ -95,7 +93,7 @@ jobs:
               RMDir "$INSTDIR"
           SectionEnd
           '@
-          Set-Content -Path installer.nsi -Value $nsi
+          Set-Content -Path installer.nsi -Value $nsiScript
           makensis installer.nsi
         shell: pwsh
 
