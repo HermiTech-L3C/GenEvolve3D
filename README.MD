@@ -1,7 +1,8 @@
 # GenEvolve3D: Genetic Evolution Simulation
 
 
-# *OUTDATED README* ... YANL CI/CD THROWN OFF BY DRASTIC DEPENDENCY CHANGE...
+# *OUTDATED README* ... YAML CI/CD THROWN OFF BY DRASTIC DEPENDENCY CHANGE...
+# WILL UPDATE IN FUTURE WITH EXECUTABLE ARTIFACTS
 ## Overview
 GenEvolve3D combines neural networks and genetic algorithms to simulate genetic evolution in an artificial environment, enhanced with 3D visualizations.
 
