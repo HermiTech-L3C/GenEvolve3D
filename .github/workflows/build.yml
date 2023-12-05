@@ -39,7 +39,7 @@ jobs:
           $repoPath = "${{ github.workspace }}/repo"
           $srcPath = "${repoPath}/src"
           $buildPath = "${srcPath}/build/exe.win-amd64-3.9"
-
+          
           # Ensure the necessary directory structure exists
           if (-not (Test-Path $srcPath)) {
             Write-Host "Creating 'src' directory..."
@@ -69,8 +69,10 @@ jobs:
           .\venv\Scripts\Activate
           $executablePath = Join-Path $buildPath 'main.exe'
           $installDir = "${env:PROGRAMFILES}\GenEvolve3D"
+          
           Write-Host "Contents of ${buildPath}:"
           Get-ChildItem -Path $buildPath -ErrorAction SilentlyContinue
+
           if (Test-Path $executablePath) {
             Copy-Item $executablePath -Destination $installDir -Force
             Write-Host "Contents of ${installDir}:"
@@ -94,10 +96,12 @@ jobs:
         run: |
           Write-Output "Updating NSIS script"
           $nsisScriptPath = "${{ github.workspace }}\.github\workflows\installer.nsi"
+          
           if (Test-Path $nsisScriptPath) {
             (Get-Content $nsisScriptPath) | ForEach-Object {
               $_ -replace '\$INSTDIR\\GenEvolve3D\.exe', '\$INSTDIR\\main.exe'
             } | Set-Content $nsisScriptPath
+            
             Write-Output "Running NSIS to create installer"
             Start-Process "C:\Program Files (x86)\NSIS\makensis.exe" -ArgumentList $nsisScriptPath -Wait
           } else {
