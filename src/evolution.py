@@ -1,37 +1,9 @@
+from collections import namedtuple
 import random
-import copy
 
-class Position:
-    def __init__(self):
-        self.x = random.uniform(-0.8, 0.8)
-        self.y = random.uniform(-0.8, 0.8)
-        self.z = random.uniform(-0.8, 0.8)
-
-class Gene:
-    def __init__(self, source_type, source_num, sink_type, sink_num, weight):
-        self.source_type = source_type
-        self.source_num = source_num
-        self.sink_type = sink_type
-        self.sink_num = sink_num
-        self.weight = weight
-        self.source_pos = Position()
-        self.sink_pos = Position()
-        self.activity = abs(weight)
-
-    def mutate(self, mutation_strength=0.1):
-        self.weight += random.uniform(-mutation_strength, mutation_strength)
-        self.activity = abs(self.weight)
-
-class Genome:
-    def __init__(self, genes=None):
-        self.genes = genes if genes is not None else []
-
-    def add_connection(self, source_type, source_num, sink_type, sink_num, weight):
-        new_gene = Gene(source_type, source_num, sink_type, sink_num, weight)
-        self.genes.append(new_gene)
-
-    def deep_copy(self):
-        return copy.deepcopy(self)
+Position = namedtuple('Position', ['x', 'y', 'z'])
+Gene = namedtuple('Gene', ['source_type', 'source_num', 'sink_type', 'sink_num', 'weight', 'source_pos', 'sink_pos', 'activity'])
+Genome = namedtuple('Genome', ['genes'])
 
 class Individual:
     def __init__(self, genome):
@@ -44,7 +16,8 @@ class Individual:
     def mutate(self, mutation_strength=0.1):
         if self.genome.genes:
             gene_to_mutate = random.choice(self.genome.genes)
-            gene_to_mutate.mutate(mutation_strength)
+            gene_to_mutate = gene_to_mutate._replace(weight=gene_to_mutate.weight + random.uniform(-mutation_strength, mutation_strength),
+                                                     activity=abs(gene_to_mutate.weight))
 
 class Evolution:
     def __init__(self, population_size, mutation_rate=0.1, fitness_function=None):
@@ -56,10 +29,19 @@ class Evolution:
         self.average_fitness = 0
 
     def _random_genome(self):
-        return Genome([self._random_gene() for _ in range(random.randint(1, 3))])
+        return Genome([self._random_gene() for _ in range(random.randint(*self._genes_range))])
 
     def _random_gene(self):
-        return Gene('type1', 0, 'type2', 1, random.uniform(-1, 1))
+        return Gene(
+            random.choice(self._source_types),
+            0,
+            random.choice(self._sink_types),
+            1,
+            random.uniform(*self._weight_range),
+            Position(*[random.uniform(-0.8, 0.8) for _ in range(3)]),
+            Position(*[random.uniform(-0.8, 0.8) for _ in range(3)]),
+            0  # Initial activity
+        )
 
     def run_generation(self):
         for individual in self.population:
@@ -87,6 +69,11 @@ class Evolution:
         gene_split = len(genome1.genes) // 2
         new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
+
+    _source_types = ['type1', 'type2']
+    _sink_types = ['type2', 'type3']
+    _weight_range = (-1, 1)
+    _genes_range = (1, 3)
 
 # Example Usage
 evolution_instance = Evolution(population_size=10, mutation_rate=0.1)
