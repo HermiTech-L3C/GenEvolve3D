@@ -76,13 +76,18 @@ class Evolution:
         next_generation = []
         while len(next_generation) < self.population_size // 2:
             parent1, parent2 = random.sample(self.population, 2)
-            child = self._crossover(parent1.genome, parent2.genome)
-            if random.random() < self.mutation_rate:
-                child.mutate()
-            next_generation.append(Individual(child))
+            child_genome = self._crossover(parent1.genome, parent2.genome)
+            for gene in child_genome.genes:
+                if random.random() < self.mutation_rate:
+                    gene.mutate()
+            next_generation.append(Individual(child_genome))
         return next_generation
 
     def _crossover(self, genome1, genome2):
         gene_split = len(genome1.genes) // 2
         new_genes = random.sample(genome1.genes, gene_split) + random.sample(genome2.genes, len(genome2.genes) - gene_split)
         return Genome(new_genes)
+
+# Example Usage
+evolution_instance = Evolution(population_size=10, mutation_rate=0.1)
+evolution_instance.run_generation()
